@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<!-- <context:annotation-config/  conponent—scan 标签包含有这个功能-->
+	<mvc:annotation-driven />
+
+	<context:component-scan base-package="com.pmcc.soft.core" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+
+	</context:component-scan>
+
+<context:component-scan base-package="com.pmcc.soft.week" use-default-filters="false" >
+<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+
+</context:component-scan>
+	<context:component-scan base-package="com.pmcc.soft.ydpt" use-default-filters="false" >
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+
+	</context:component-scan>
+
+	<context:component-scan base-package="com.hndl.mobileplatform" use-default-filters="false" >
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+
+	</context:component-scan>
+
+
+
+
+	<!-- json转换器 -->
+
+	<bean id="appUtil" class="com.pmcc.soft.core.common.ApplicationContextUtil"/>
+	<bean
+			class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean
+						class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"></bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean
+			class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+
+		<property name="prefix">
+			<value>/WEB-INF/jsp/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+	<bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp.163.com"/>
+		<property name="port" value="25"/>
+		<property name="username" value="z@163.com"/>
+		<property name="password" value="000"/>s
+		<property name="javaMailProperties">
+			<props >
+				<prop key="mail.smtp.auth">true</prop>
+			</props>
+		</property>
+	</bean>
+	<bean id="simpleMailMessage" class="org.springframework.mail.SimpleMailMessage">
+		<property name="from" value="z7@163.com" />
+		<property name="subject" value="找回密码" />
+		<!--
+        <property name="text" value="邮件内容" />
+        -->
+	</bean>
+	<!--线程池异步发送邮件-->
+	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="5" />
+		<property name="maxPoolSize" value="10" />
+		<property name="queueCapacity" value="25" />
+	</bean>
+</beans>

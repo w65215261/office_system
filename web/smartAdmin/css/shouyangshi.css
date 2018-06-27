@@ -1,0 +1,85 @@
+@charset "utf-8";
+/* CSS Document */
+*{ margin:0px; padding:0px; font:Arial, Helvetica, sans-serif; list-style:none}
+a:hover{ color:#39F}
+.clear{ font-size:0px;  clear:both; height:0px; content:""}
+
+
+
+
+
+
+
+.rowo{ margin:0px 20px;}
+.rowo .col-12 { margin:20px 0px 50px 0px;height:90px ;overflow:hidden;}
+.rowo .col-12 dl {  width:400px;float:left;  }
+.rowo .col-12 dl dt{display:block ;background:#ccc; width:70px ; height:70px; font-size:0px; border:#9FF 1px dotted; overflow:hidden; float:left; margin-right:15px; text-align:center; line-height:70px}
+.rowo .col-12 dl dd{ overflow:hidden; margin-left:20px; display:block ; }
+.rowo .col-12 dl dd span{ font-size:24px; color:#62a4ff}
+.rowo .col-12 ._tianqi {background:url(/smartAdmin/img/shouye/tianqi1.png) 0 0 no-repeat;  padding-left:80px;  overflow:hidden; float:right; height:100px  }
+.rowo .col-12 ._tianqi ul li{ list-style:none}
+.rowo .col-12 ._tianqi ul li a b{ color:#7bb111}
+
+
+
+
+
+
+.rowo .col-12 dl dd ._yingdenglu ul li{ float:left ;padding:0px 10px ; list-style:none}
+.rowo .col-12 dl dd ._yingdenglu ul li b{ font-size:14px; font-weight:normal}
+.rowo .col-12 dl dd ._yingdenglu ul li i{ font-style:normal}
+
+
+
+
+
+
+
+
+.rowo ._two{ position:relative;}
+
+
+	
+	
+   
+
+
+.rowo ._xinwen{width:400px;float:left; margin-right:60px
+
+}
+.rowo ._xinwen ._neirong{ height:60px; width:400px}
+
+.rowo ._xinwen ._neirong ul li{width:40px; height:50px ; display:block; float:left; background:url(/smartAdmin/img/shouye/gonggaolan.png) center 0 no-repeat; list-style:none; font-size:24px; color:#eee6ae; text-align:center ; margin-right:2px}
+.rowo ._xinwen ._neirong ul  span{ float:right}
+
+
+
+
+
+
+._two ._xinwen ._xiangqing{ margin:0px 0px 40px 0px;float:left;overflow:hidden;}
+._two ._xinwen ._xiangqing dl{overflow:hidden; display:block; width:400px;  border-bottom:#CCC 1px dotted; padding-bottom:5px; 
+}
+._two ._xinwen ._xiangqing dl dt{width:200px ;float:left; text-overflow:ellipsis;overflow:hidden;white-space: nowrap; }
+._two ._xinwen ._xiangqing dl dd{ overflow:hidden; text-align:right}
+
+
+
+
+._two ._richeng ._neirong{ height:60px; width:400px}
+._two ._richeng ._neirong span{ float:right}
+._two ._richeng ._neirong ul li{width:40px; height:50px ; display:block; float:left; background:url(/smartAdmin/img/shouye/gonggaolan.png) center 0 no-repeat; list-style:none; font-size:24px; color:#eee6ae; text-align:center ; margin-right:2px}
+
+._two ._richeng{overflow:hidden; }
+._two  ._richeng dl{overflow:hidden; display:block; width:400px;  border-bottom:#CCC 1px dotted; padding-bottom:5px; 
+}
+
+._two ._richeng dl dt{width:200px ;float:left; text-overflow:ellipsis;overflow:hidden;white-space: nowrap; }
+._two  ._richeng dl dd{ overflow:hidden; text-align:right}
+
+
+
+
+
+
+.co-sm-1 {float:left; margin:0px 20px}

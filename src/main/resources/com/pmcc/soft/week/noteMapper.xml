@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/noteMapper" >
+
+    <resultMap id="NoteMap" type="com.pmcc.soft.week.domain.Note">
+        <id property="oid" column="OID" />
+        <result property="notebookOid" column="NOTE_BOOK_OID"/>
+        <result property="userOid" column="USER_OID"/>
+        <result property="delFlag" column="DEL_FLAG" />
+        <result property="noteTitle" column="NOTE_TITLE" />
+        <result property="noteBody" column="NOTE_BODY" />
+        <result property="noteCreateTime" column="NOTE_CREATE_TIME" />
+        <result property="noteLastModifyTime" column="NOTE_LAST_MODIFY_TIME" />
+    </resultMap>
+
+    <sql id="sql_order">ORDER BY NOTE_LAST_MODIFY_TIME  desc</sql>
+
+    <sql id="sql_columns">
+        OID,
+        NOTE_BOOK_OID,
+        USER_OID,
+        DEL_FLAG,
+        NOTE_TITLE,
+        NOTE_BODY,
+        NOTE_CREATE_TIME,
+        NOTE_LAST_MODIFY_TIME
+    </sql>
+
+    <sql id="sql_table">NOTE</sql>
+
+    <select id="findNotes" resultMap="NoteMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and USER_OID =#{userOid}
+        <if test=" notebookOid != null and notebookOid !=''" >and NOTE_BOOK_OID =#{notebookOid}</if>
+        <include refid="sql_order"/>
+    </select>
+
+    <select id="searchNoteByNoteName" resultMap="NoteMap"  >
+        <bind name="noteTitle" value="'%' + _parameter.noteTitle + '%'" />
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and USER_OID =#{userOid}
+        and NOTE_TITLE LIKE  #{noteTitle}
+        <include refid="sql_order"/>
+    </select>
+
+
+
+    <select id="findRecycleBin" resultMap="NoteMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=1
+        and USER_OID =#{userOid}
+        <include refid="sql_order"/>
+    </select>
+
+    <select id="findNotesByDeFlag" resultMap="NoteMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where NOTE_BOOK_OID =#{notebookOid}
+        <if test=" delFlag != null and delFlag !=''" >AND DEL_FLAG =#{delFlag}</if>
+    </select>
+
+    <select id="findNoteDetailsByNoteOid" resultMap="NoteMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and USER_OID =#{userOid}
+        and OID =#{oid}
+    </select>
+
+    <insert id="addNote">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{oid},
+        #{notebookOid},
+        #{userOid},
+        #{delFlag},
+        #{noteTitle},
+        #{noteBody},
+        #{noteCreateTime},
+        #{noteLastModifyTime}
+        )
+    </insert>
+
+    <update id="deleteNote">
+        update <include refid="sql_table"/>
+        <set >
+            DEL_FLAG=1
+        </set>
+        where OID = #{oid}
+    </update>
+
+    <delete id="deleteNoteTrue">
+        delete   from
+        <include refid="sql_table"/>
+        where oid = #{oid}
+    </delete>
+
+    <update id="restoreNote">
+        update <include refid="sql_table"/>
+        <set >
+            DEL_FLAG=0
+        </set>
+        where OID = #{oid}
+    </update>
+
+    <update id="deleteNotes">
+        update <include refid="sql_table"/>
+        <set >
+            DEL_FLAG=1
+        </set>
+        where NOTE_BOOK_OID = #{notebookOid}
+    </update>
+
+    <update id="modifyNoteDetails">
+        update <include refid="sql_table"/>
+        <set >
+            NOTE_TITLE = #{noteTitle},
+            NOTE_BODY = #{noteBody},
+            NOTE_CREATE_TIME = #{noteCreateTime},
+            NOTE_LAST_MODIFY_TIME = #{noteLastModifyTime}
+        </set>
+        where OID = #{oid}
+    </update>
+    <select id="findNotesTitle" resultMap="NoteMap"  >
+        select
+        OID,
+        NOTE_BOOK_OID,
+        USER_OID,
+        DEL_FLAG,
+        NOTE_TITLE,
+        NOTE_CREATE_TIME,
+        NOTE_LAST_MODIFY_TIME
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and USER_OID =#{userOid}
+
+        and NOTE_BOOK_OID =#{notebookOid}
+        <include refid="sql_order"/>
+    </select>
+    <select id="findRecoverNote" resultMap="NoteMap"  >
+        select
+        OID,
+        NOTE_BOOK_OID,
+        USER_OID,
+        DEL_FLAG,
+        NOTE_TITLE,
+        NOTE_CREATE_TIME,
+        NOTE_LAST_MODIFY_TIME
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=1
+        and USER_OID =#{userOid}
+        <include refid="sql_order"/>
+    </select>
+</mapper>
+

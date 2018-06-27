@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/DiySelectDisplayMapper">
+
+    <resultMap id="diySelectDisplayMap" type="com.pmcc.soft.week.domain.DiySelectDisplay">
+        <id property="id" column="ID"/>
+        <result property="controlId" column="CONTROL_ID"/>
+        <result property="optionText" column="OPTION_TEXT"/>
+        <result property="optionValue" column="OPTION_VALUE"/>
+        <result property="optionIndex" column="OPTION_INDEX"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_table">DIY_SELECT_DISPLAY</sql>
+    <sql id="sql_order">ORDER BY  OPTION_INDEX  </sql>
+
+    <sql id="sql_columns">
+        ID,
+        CONTROL_ID,
+        OPTION_TEXT,
+        OPTION_VALUE,
+        OPTION_INDEX
+    </sql>
+
+    <select id="queryByControlId" resultMap="diySelectDisplayMap">
+        SELECT
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        WHERE CONTROL_ID = #{controlId}
+        <include refid="sql_order"/>
+    </select>
+
+    <!--*******************手机端接口***开始***by LvXL*******************-->
+    <!--查询下拉框-->
+    <select id="queryCombo" resultMap="diySelectDisplayMap">
+        SELECT b.*
+        FROM TEMPLEATE_CONTROL a, DIY_SELECT_DISPLAY b
+        WHERE a.ID = b.CONTROL_ID
+        <if test="templateCode != null">AND a.TEMPLATE_CODE = #{templateCode}</if>
+        <if test="controlType != null">AND a.CONTROL_TYPE = #{controlType}</if>
+        <if test="controlIndex != null">AND a.[INDEX] = #{controlIndex}</if>
+        ORDER BY b.OPTION_INDEX
+    </select>
+
+    <!--*******************手机端接口***结束***by LvXL*******************-->
+
+</mapper>

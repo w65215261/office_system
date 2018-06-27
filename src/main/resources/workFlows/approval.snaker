@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<process displayName="请假审批" name="task1">
+<start displayName="start1" layout="307,131,-1,-1" name="start1">
+<transition g="" name="transition1" offset="0,0" to="task1"/>
+</start>
+<task assignmentHandler="com.pmcc.soft.task.simpleflows.assignmenthandler.Task1Assign" autoExecute="Y" displayName="一级" layout="588,131,-1,-1" name="task2" performType="ANY"  postInterceptors="com.pmcc.soft.task.simpleflows.interceptor.CustomEndTaskInterceptor" taskType="Major">
+<transition g="" name="transition2" offset="0,0" to="task3"/>
+</task>
+<task assignee="owner" autoExecute="Y" displayName="发起" layout="416,130,-1,-1" name="task1" performType="ANY" postInterceptors="com.pmcc.soft.task.simpleflows.interceptor.CustomTaskInterceptor" taskType="Major">
+<transition g="" name="transition3" offset="0,0" to="task2"/>
+</task>
+
+<task assignmentHandler="com.pmcc.soft.task.simpleflows.assignmenthandler.Task2Assign" autoExecute="Y" displayName="二级" layout="774,131,-1,-1" name="task3" performType="ANY"  postInterceptors="com.pmcc.soft.task.simpleflows.interceptor.CustomEndTaskInterceptor" taskType="Major">
+<transition g="" name="transition4" offset="0,0" to="end1"/>
+</task>
+<end displayName="end1" layout="940,134,-1,-1" name="end1"/>
+</process>

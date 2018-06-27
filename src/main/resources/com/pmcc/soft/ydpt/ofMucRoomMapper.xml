@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/ydpt/ofMucRoomMapper">
+    <resultMap id="ofMucRoomMap" type="com.pmcc.soft.ydpt.domain.OfMucRoom">
+        <id property="serviceID" column="serviceID" />
+        <result property="roomID" column="roomID" />
+        <result property="creationDate" column="creationDate"/>
+        <result property="modificationDate" column="modificationDate"/>
+        <result property="name" column="name"/>
+        <result property="naturalName" column="naturalName"/>
+        <result property="description" column="description"/>
+        <result property="lockedDate" column="lockedDate"/>
+        <result property="emptyDate" column="emptyDate"/>
+        <result property="canChangeSubject" column="canChangeSubject"/>
+        <result property="maxUsers" column="maxUsers"/>
+        <result property="publicRoom" column="publicRoom"/>
+        <result property="moderated" column="moderated"/>
+        <result property="membersOnly" column="membersOnly"/>
+        <result property="canInvite" column="canInvite"/>
+        <result property="roomPassword" column="roomPassword"/>
+        <result property="canDiscoverJID" column="canDiscoverJID"/>
+        <result property="logEnabled" column="logEnabled"/>
+        <result property="subject" column="subject"/>
+        <result property="rolesToBroadcast" column="rolesToBroadcast"/>
+        <result property="useReservedNick" column="useReservedNick"/>
+        <result property="canChangeNick" column="canChangeNick"/>
+        <result property="canRegister" column="canRegister"/>
+    </resultMap>
+
+    <sql id="sql_order">ORDER BY creationDate desc</sql>
+    <sql id="sql_columns">serviceID,roomID,creationDate,modificationDate,name,naturalName,description,lockedDate,
+      emptyDate,canChangeSubject,maxUsers,publicRoom,moderated,membersOnly,canInvite,roomPassword,
+      canDiscoverJID,logEnabled,subject,rolesToBroadcast,useReservedNick,canChangeNick,canRegister
+    </sql>
+    <sql id="sql_table">ofMucRoom</sql>
+    <sql id="sql_where"> where 1=1
+        <if test=" serviceID != 0" >
+            and serviceID =#{serviceID}
+        </if>
+    </sql>
+
+    <!--serviceID,roomID,creationDate,modificationDate,name,naturalName-->
+    <select id="query" resultMap="ofMucRoomMap"  >
+        select
+          *
+        from
+          <include refid="sql_table"/>
+        where 1=1
+        <if test=" roomID != 0 and roomID != '' " >
+            and roomID =#{roomID}
+        </if>
+        <if test=" naturalName != null and naturalName != '' " >
+            and naturalName LIKE '%' + #{naturalName} +'%'
+        </if>
+        <include refid="sql_order"/>
+    </select>
+
+    <select id="findById" resultMap="ofMucRoomMap" >
+        select
+          <include refid="sql_columns"/>
+        from
+          <include refid="sql_table"/>
+        where
+          serviceID = #{_parameter}
+    </select>
+
+    <delete id="delete">
+        delete from
+          <include refid="sql_table"/>
+        where
+        roomID = #{roomID}
+    </delete>
+
+    <insert id="insert" >
+        insert into <include refid="sql_table"/>
+          (<include refid="sql_columns"/>)
+        values
+          (1,#{roomID},#{creationDate},#{modificationDate},#{name},#{naturalName},#{description},'000000000000000',#{emptyDate},0,30,1,0,0,0,null,1,0,'',7,0,1,1)
+    </insert>
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            <if test="serviceID != 0" >serviceID = #{serviceID},</if>
+            <if test="creationDate != null" >creationDate = #{creationDate},</if>
+            <if test="modificationDate != null" >modificationDate = #{modificationDate},</if>
+            <if test="name != null" >name = #{name},</if>
+            <if test="naturalName != null" >naturalName = #{naturalName},</if>
+            <if test="description != null" >description = #{description},</if>
+        </set>
+        where
+        roomID = #{roomID}
+    </update>
+
+    <!--查询roomId-->
+    <select id="queryRoomId" resultMap="ofMucRoomMap"  >
+        select
+          roomID
+        from
+          <include refid="sql_table"/>
+        order by roomID desc
+    </select>
+
+    <select id="findByRoomID" resultMap="ofMucRoomMap">
+        SELECT
+          roomID,creationDate,modificationDate,name,naturalName,description
+        FROM
+          <include refid="sql_table"/>
+        WHERE
+          roomID = #{roomID}
+    </select>
+
+</mapper>

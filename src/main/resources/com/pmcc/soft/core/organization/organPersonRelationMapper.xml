@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/organPersonRelationMapper" >
+	
+	<resultMap id="organPersonRelationResultMapper" type="com.pmcc.soft.core.organization.domain.OrganPersonRelation">
+		<id property="id" column="oid" />
+		<result property="personInfoId" column="PERSON_INFO_ID"/>
+		<result property="organizationInfoId" column="ORGANIZATION_INFO_ID"/>
+		<result property="userPosition" column="USER_POSITION"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<result property="rptPerson" column="RPT_PERSON"/>
+	</resultMap>
+	<sql id='sql_page_init'>
+		<if test=" initPage == 0" >
+			${topA}  * FROM
+			(
+			SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+		</if>
+	</sql>
+
+	<sql id='sql_page_end'>
+		<if test="initPage == 0" >
+			) AS initPage
+			WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+			ORDER BY RowNum
+		</if>
+		<if test="initPage != 0" >
+			<include refid="sql_order"/>
+		</if>
+	</sql>
+
+	<sql id="sql_order">ORDER BY  oid </sql>
+
+	<sql id="sql_columns">OID,PERSON_INFO_ID,ORGANIZATION_INFO_ID,USER_POSITION,RPT_PERSON,CREATE_DATE</sql>
+	<sql id="sql_table">ORGAN_PERSON_RELATION_INFO</sql>
+
+	<select id="queryOrgR" resultType="com.pmcc.soft.core.organization.domain.OrganPersonRelation"  >
+	    select oid as id ,PERSON_INFO_ID ,ORGANIZATION_INFO_ID
+	    from ORGAN_PERSON_RELATION_INFO
+	    <if test=" id != null" >
+	   		 where oid = #{id}
+	    </if>
+	    order by oid
+	</select> 
+	
+	
+  <select id="queryByPersonId" resultMap="organPersonRelationResultMapper"  >
+	    select oid as id ,PERSON_INFO_ID ,ORGANIZATION_INFO_ID
+	    from ORGAN_PERSON_RELATION_INFO
+	    <if test=" _parameter != null" >
+	   		 where PERSON_INFO_ID = #{_parameter}
+	    </if>
+	    order by oid
+	</select>
+	
+	<!--通过组织机构id查找 sunyongxing 2014-09-26-->
+   <select id="findByOrgId" resultMap="organPersonRelationResultMapper"  >
+	    select a.*
+	    from ORGAN_PERSON_RELATION_INFO a, PERSON_INFO b
+	    <if test=" _parameter != null" >
+	   		where a. PERSON_INFO_ID = b.OID
+			AND  b.DEL_FLAG = 0
+			AND a.ORGANIZATION_INFO_ID = #{ _parameter}
+	    </if>
+	    order by oid
+	</select>
+
+
+	<delete id="deleteOrgR">
+	    delete from ORGAN_PERSON_RELATION_INFO
+	    where oid = #{id}
+	</delete>
+  
+	<!-- parameterType="com.pmcc.soft.core.organization.domain" -->
+  
+	<insert id="insertOrgR">
+     insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+	    values (#{id}, #{personInfoId}, #{organizationInfoId},#{userPosition}, #{rptPerson},
+	            #{createDate})
+	</insert>
+
+	<update id="updateOrgR">
+    update ORGAN_PERSON_RELATION_INFO
+		<set >
+			<if test="personInfoId != null" >
+        		PERSON_INFO_ID = #{personInfoId},
+			</if>
+			<if test="organizationInfoId != null" >
+        		ORGANIZATION_INFO_ID = #{organizationInfoId},
+			</if>
+			<if test="rptPerson != null" >
+        		RPT_PERSON = #{rptPerson},
+			</if>
+			<if test="createDate != null" >
+        		CREATE_DATE = #{createDate},
+			</if>
+		</set>
+    where oid = #{id}
+	</update>
+	<select id="queryOrgRr" resultType="com.pmcc.soft.core.organization.domain.OrganPersonRelation"  >
+		select oid  ,PERSON_INFO_ID ,ORGANIZATION_INFO_ID
+		from ORGAN_PERSON_RELATION_INFO
+			where PERSON_INFO_ID = #{personInfoId}
+	</select>
+    <select id="queryPersonByOrg" resultMap="organPersonRelationResultMapper"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where ORGANIZATION_INFO_ID  = #{organizationInfoId}
+        <include refid="sql_page_end"/>
+    </select>
+</mapper>	

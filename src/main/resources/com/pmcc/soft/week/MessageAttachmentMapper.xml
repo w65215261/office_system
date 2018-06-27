@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/messageAttachmentMapper" >
+
+    <resultMap id="messageAttachmentMap" type="com.pmcc.soft.week.domain.MessageAttachment">
+        <id property="id" column="oid" />
+        <result property="messageId" column="MATERIAL_OID"/>
+        <result property="fileName" column="FILE_NAME"/>
+        <result property="fileUrl" column="FILE_URL"/>
+        <result property="fileMathName" column="FILE_MATH_NAME"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="creatorId" column="CREATOR_ID"/>
+        <result property="modifyDate" column="MODIFY_DATE"/>
+        <result property="modifyId" column="MODIFY_ID"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+    <sql id="sql_order">ORDER BY CREATE_DATE DESC</sql>
+
+    <sql id="sql_columns">OID,MATERIAL_OID,FILE_NAME,FILE_URL,FILE_MATH_NAME,CREATE_DATE,CREATOR_ID,MODIFY_DATE,MODIFY_ID,DEL_FLAG</sql>
+    <sql id="sql_table">HT_MESSAGE_ATTACHMENT</sql>
+    <sql id="sql_where">where DEL_FLAG='0'
+        <if test=" id != null and id !=''" >and oid =#{id}</if>
+        <if test="messageId!=null and messageId !=''">and MATERIAL_OID=#{messageId}</if>
+    </sql>
+
+    <insert id="insert">
+        insert <include refid="sql_table"/> (OID,MATERIAL_OID,FILE_NAME,FILE_URL,FILE_MATH_NAME,CREATE_DATE,CREATOR_ID,MODIFY_DATE,MODIFY_ID,DEL_FLAG)
+        values (#{id},#{messageId},#{fileName},#{fileUrl},#{fileMathName},#{createDate},#{creatorId},#{modifyDate},#{modifyId},#{delFlag})
+    </insert>
+
+    <delete id="delete">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where oid = #{id}
+    </delete>
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            <if test="materialId != null" >MATERIAL_OID = #{messageId},</if>
+            <if test="fileUrl != null" >FILE_URL = #{fileUrl},</if>
+        </set>
+        where oid = #{id}
+    </update>
+
+    <select id="query" resultMap="messageAttachmentMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <include refid="sql_where"/>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <select id="findById" resultMap="messageAttachmentMap">
+        select <include refid="sql_columns"/>from <include refid="sql_table"/> where oid = #{id}
+    </select>
+
+</mapper>

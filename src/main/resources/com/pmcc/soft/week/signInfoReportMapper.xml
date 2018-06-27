@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/signInfoReportMapper" >
+
+    <resultMap id="SignInfoReportMap" type="com.pmcc.soft.week.domain.SignInfoReport">
+        <id property="id" column="OID" />
+        <result property="signPersonId" column="SIGN_PERSON_OID"/>
+        <result property="signPersonName" column="SIGN_PERSON_NAME"/>
+        <result property="personDuty" column="PERSON_DUTY"/>
+        <result property="belongsDate" column="BELONGS_DATE"/>
+        <result property="signFlag" column="SIGN_FLAG"/>
+        <result property="lastSignTime" column="LAST_SIGN_TIME"/>
+        <result property="lastSignAddress" column="LAST_SIGN_ADDRESS"/>
+        <result property="orgId" column="ORG_ID"/>
+        <result property="orgCode" column="ORG_CODE"/>
+        <result property="orgCname" column="ORG_CNAME"/>
+    </resultMap>
+    <sql id="sql_columns">OID, SIGN_PERSON_OID, SIGN_PERSON_NAME, PERSON_DUTY, BELONGS_DATE,SIGN_FLAG,LAST_SIGN_TIME,LAST_SIGN_ADDRESS,ORG_ID,ORG_CODE,ORG_CNAME</sql>
+    <sql id="sql_table">SIGN_INFO_REPORT</sql>
+    <insert id="insertSignInfoReport">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{id},
+        #{signPersonId},
+        #{signPersonName},
+        #{personDuty},
+        #{belongsDate},
+        #{signFlag},
+        #{lastSignTime},
+        #{lastSignAddress},
+        #{orgId},
+        #{orgCode},
+        #{orgCname}
+        )
+    </insert>
+    <update id="updateSignInfoReport">
+            UPDATE  SIGN_INFO_REPORT SET  SIGN_FLAG=1,LAST_SIGN_TIME= #{lastSignTime},LAST_SIGN_ADDRESS= #{lastSignAddress}
+            WHERE   SIGN_PERSON_OID =#{signPersonId} AND  BELONGS_DATE BETWEEN #{startTime} AND #{endTime}
+    </update>
+</mapper>
+

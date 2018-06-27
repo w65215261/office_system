@@ -1,0 +1,37 @@
+<section>
+    <label class="label col col-2" style="text-align: right"><span class="redText">*</span>${startPlaceHolder}:</label>
+    <section class="col col-4  no-padding">
+        <label class="input"> <i class="icon-append fa fa-calendar"></i>
+            <input type="text" name="${startControlKey}" id="${startControlKey}" placeholder="${startPlaceHolder}" readonly="true">
+        </label>
+    </section>
+    <br><br><br>
+    <label class="label col col-2" style="text-align: right"><span class="redText">*</span>${endPlaceHolder}:</label>
+    <section class="col col-4  no-padding">
+    <label class="input"> <i class="icon-append fa fa-calendar"></i>
+        <input type="text" name="${endControlKey}" id="${endControlKey}" placeholder="${endPlaceHolder}" readonly="true">
+    </label>
+    </section>
+</section>
+<br>
+<script>
+    $('#${startControlKey}').datepicker({
+        dateFormat : 'yy-mm-dd',
+        showOtherMonths:true,
+        prevText : '<i class="fa fa-chevron-left"></i>',
+        nextText : '<i class="fa fa-chevron-right"></i>',
+        onSelect : function(selectedDate) {
+            $('#${endControlKey}').datepicker('option', 'minDate', selectedDate);
+        }
+    });
+
+    $('#${endControlKey}').datepicker({
+        dateFormat : 'yy-mm-dd',
+        showOtherMonths:true,
+        prevText : '<i class="fa fa-chevron-left"></i>',
+        nextText : '<i class="fa fa-chevron-right"></i>',
+        onSelect : function(selectedDate) {
+            $('#${startControlKey}').datepicker('option', 'maxDate', selectedDate);
+        }
+    });
+</script>

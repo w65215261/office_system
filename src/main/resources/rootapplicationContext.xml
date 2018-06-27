@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/task
+	http://www.springframework.org/schema/task/spring-task-3.2.xsd
+	 http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+    <context:annotation-config/>
+
+    <context:component-scan base-package="com">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+
+    </context:component-scan>
+    <bean id="appUtil" class="com.pmcc.soft.core.common.ApplicationContextUtil"/>
+    <bean
+            class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <!-- <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"
+            /> <property name="ignoreResourceNotFound" value="true" /> -->
+        <property name="locations">
+            <list>
+                <value>classpath*:/application.properties</value>
+            </list>
+        </property>
+    </bean>
+
+
+
+    <bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource"
+          destroy-method="close">
+        <property name="driverClass" value="${jdbc.driver}" />
+        <property name="jdbcUrl" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="maxConnectionsPerPartition" value="${jdbc.maxConn}" />
+        <property name="minConnectionsPerPartition" value="${jdbc.minConn}" />
+        <property name="partitionCount" value="3" />
+        <property name="acquireIncrement" value="5" />
+        <property name="statementsCacheSize" value="100" />
+    </bean>
+
+    <!-- 配置事务管理器 -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+        <property name="globalRollbackOnParticipationFailure" value="false" />
+    </bean>
+
+    <!-- 注解方式配置事物 -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+    <!--MyBatis config -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:orm-config.xml" />
+        <property name="typeAliasesPackage" value="org.snaker.engine.entity" />
+        <property name="mapperLocations">
+            <list>
+                <!-- 表示在com.hoo.resultmap包或以下所有目录中，以-resultmap.xml结尾所有文件 -->
+                <value>classpath:com/pmcc/soft/core/organization/*.xml</value>
+                <value>classpath:com/hndl/mobileplatform/modelxml/*.xml</value>
+                <value>classpath:com/pmcc/soft/ydpt/*.xml</value>
+                <value>classpath:com/pmcc/soft/week/*.xml</value>
+            </list>
+        </property>
+        <property name="plugins">
+            <ref bean="pageInterceptor"/>
+        </property>
+    </bean>
+    <bean id="pageInterceptor" class="com.pmcc.soft.core.common.PageInterceptor"/>
+
+
+
+    <!--     spring与mybatis整合配置，扫描所有dao -->
+    <!--     spring与mybatis整合配置，扫描所有dao -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" p:basePackage="com.hndl.mobileplatform.dao;com.pmcc.soft.core.organization.dao;com.pmcc.soft.ydpt.dao"
+          p:sqlSessionFactoryBeanName="sqlSessionFactory"></bean>
+
+
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="500000000"></property>
+    </bean>
+    <task:annotation-driven/>
+
+    <bean id="dbAccess" class="org.snaker.engine.access.mybatis.MybatisAccess">
+        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+    <!-- 流程引擎配置 -->
+    <bean class="org.snaker.engine.spring.SpringSnakerEngine">
+        <property name="processService" ref="processService" />
+        <property name="orderService" ref="orderService" />
+        <property name="taskService" ref="taskService" />
+        <property name="queryService" ref="queryService" />
+        <property name="managerService" ref="managerService" />
+    </bean>
+
+
+    <bean id="processService" class="org.snaker.engine.core.ProcessService">
+        <property name="access" ref="dbAccess" />
+        <property name="cacheManager" ref="cacheManager" />
+    </bean>
+    <bean id="orderService" class="org.snaker.engine.core.OrderService">
+        <property name="access" ref="dbAccess" />
+    </bean>
+    <bean id="taskService" class="org.snaker.engine.core.TaskService">
+        <property name="access" ref="dbAccess" />
+    </bean>
+    <bean id="managerService" class="org.snaker.engine.core.ManagerService">
+        <property name="access" ref="dbAccess" />
+    </bean>
+    <bean id="queryService" class="org.snaker.engine.core.QueryService">
+        <property name="access" ref="dbAccess" />
+    </bean>
+
+    <bean id="cacheManager" class="org.snaker.engine.cache.memory.MemoryCacheManager" />
+
+    <!-- 流程事务配置 aop的pointcut中增加:or execution(* org.snaker.engine..*.*(..)) -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="start*" propagation="REQUIRED" />
+            <tx:method name="execute*" propagation="REQUIRED" />
+            <tx:method name="save*" propagation="REQUIRED" />
+            <tx:method name="delete*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="remove*" propagation="REQUIRED" />
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="assign*" propagation="REQUIRED" />
+            <tx:method name="create*" propagation="REQUIRED" />
+            <tx:method name="complete*" propagation="REQUIRED" />
+            <tx:method name="finish*" propagation="REQUIRED" />
+            <tx:method name="terminate*" propagation="REQUIRED" />
+            <tx:method name="take*" propagation="REQUIRED" />
+            <tx:method name="deploy*" propagation="REQUIRED" />
+            <tx:method name="redeploy*" propagation="REQUIRED" />
+            <tx:method name="undeploy*" propagation="REQUIRED" />
+            <tx:method name="withdrawTask*" propagation="REQUIRED" />
+            <tx:method name="native*" propagation="REQUIRED" />
+
+            <tx:method name="get*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="find*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="query*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="search*" propagation="REQUIRED" read-only="true" />
+            <tx:method name="is*" propagation="REQUIRED" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* org.snaker.engine..*.*(..))"/>
+    </aop:config>
+    <aop:aspectj-autoproxy proxy-target-class="true" />
+</beans>

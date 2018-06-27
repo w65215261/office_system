@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/SystemFolderMapper">
+
+    <resultMap id="systemFolderMap" type="com.pmcc.soft.week.domain.SystemFolder">
+        <id property="id" column="ID"/>
+        <result property="folderName" column="FOLDER_NAME"/>
+        <result property="folderCode" column="FOLDER_CODE"/>
+        <result property="folderType" column="FOLDER_TYPE"/>
+        <result property="folderTotalSize" column="FOLDER_TOTAL_SIZE"/>
+        <result property="folderUsedSize" column="FOLDER_USED_SIZE"/>
+        <result property="rptPerson" column="RPT_PERSON"/>
+        <result property="rptPersonName" column="RPT_PERSON_NAME"/>
+        <result property="rptDate" column="RPT_DATE"/>
+        <result property="orgName" column="ORG_NAME"/>
+        <result property="orgCode" column="ORG_CODE"/>
+        <result property="orgId" column="ORG_ID"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        <result property="companyName" column="COMPANY_NAME"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0">
+            ${topA} * FROM
+            (
+            SELECT ${topB} ROW_NUMBER() OVER (
+            <include refid="sql_order"/>
+            ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0">
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0">
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+    <sql id="sql_table">SYSTEM_FOLDER</sql>
+
+    <sql id="sql_columns">
+        ID,
+        FOLDER_NAME,
+        FOLDER_CODE,
+        FOLDER_TYPE,
+        FOLDER_TOTAL_SIZE,
+        FOLDER_USED_SIZE,
+        RPT_PERSON,
+        RPT_PERSON_NAME,
+        RPT_DATE,
+        ORG_NAME,
+        ORG_CODE,
+        ORG_ID,
+        COMPANY_ID,
+        COMPANY_NAME,
+        DEL_FLAG
+    </sql>
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/>
+        (<include refid="sql_columns"/>)
+        values
+        (#{id},
+        #{folderName},
+        #{folderCode},
+        #{folderType},
+        #{folderTotalSize},
+        #{folderUsedSize},
+        #{rptPerson},
+        #{rptPersonName},
+        #{rptDate},
+        #{orgName},
+        #{orgCode},
+        #{orgId},
+        #{companyId},
+        #{companyName},
+        #{delFlag}
+        )
+    </insert>
+
+
+    <!--查询-->
+    <select id="query" resultMap="systemFolderMap">
+        select
+          <include refid="sql_columns"/>
+        from
+          <include refid="sql_table"/>
+        where 1 = 1
+            <if test="rptPerson != null and rptPerson != '' ">
+                AND RPT_PERSON = #{rptPerson}
+            </if>
+            <if test="folderType != null and folderType != '' ">
+                AND FOLDER_TYPE = #{folderType}
+            </if>
+            <if test="companyId != null and companyId != '' ">
+                AND COMPANY_ID = #{companyId}
+            </if>
+            <if test="id != null and id != '' ">
+                AND ID = #{id}
+            </if>
+        <include refid="sql_order"/>
+    </select>
+
+    <!--更新已用容量-->
+    <update id="update">
+        update  <include refid="sql_table"/> set FOLDER_USED_SIZE = #{folderUsedSize} where ID = #{id}
+    </update>
+
+</mapper>

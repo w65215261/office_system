@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/menuItemInfoMapper" >
+
+<resultMap id="menuItemInfoMapper" type="com.pmcc.soft.core.organization.domain.MenuItemInfo">
+		<id property="id" column="oid" />
+		<result property="parentOid" column="PARENT_OID"/>
+		<result property="menuEName" column="MENU_ENAME"/>
+		<result property="menuCname" column="MENU_CNAME"/>
+		<result property="menuUrl" column="MENU_URL"/>
+		<result property="menuType" column="MENU_TYPE"/>
+		<result property="isShow" column="IS_SHOW"/>
+		<result property="menuOrder" column="MENU_ORDER"/>
+		<result property="menuIcon" column="MENU_ICON"/>
+		<result property="systemOid" column="SYSTEM_OID"/>
+		<result property="remark" column="REMARK"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<result property="createTime" column="CREATE_DATE"/>
+	</resultMap>
+	<sql id='sql_page_init'>
+    	<if test=" initPage == 0" >
+    
+		 ${topA}  * FROM 
+		 (
+		    SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+		
+    	</if>
+    </sql>
+    
+      <sql id='sql_page_end'>
+    	<if test=" initPage == 0" >
+		   ) AS initPage
+		WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+		ORDER BY RowNum
+		
+    	</if>
+    	<if test=" initPage != 0" > 
+		         <include refid="sql_order"/>  
+    	</if>
+    </sql>
+    <sql id="sql_where">where DEL_FLAG = 0
+					<if test=" id != null" >
+	   					 and oid =#{id}
+					</if>
+	</sql>
+	<delete id="delete">
+	    update  <include refid="sql_table"/> set DEL_FLAG=1 where oid = #{id}
+	</delete>
+	<sql id="sql_order">ORDER BY CREATE_DATE desc</sql>
+	<select id="query" resultMap="menuItemInfoMapper"  >
+		select  
+		      <include refid="sql_page_init"/>
+		      <include refid="sql_columns"/>
+		from 
+		      <include refid="sql_table"/>  
+		<include refid="sql_where"/>  
+		ORDER BY MENU_ORDER
+	    <include refid="sql_page_end"/>
+	</select>
+	<sql id="sql_table">MENU_ITEM_INFO</sql>
+	<sql id="sql_columns">OID,PARENT_OID,MENU_ENAME,MENU_CNAME,MENU_URL,MENU_TYPE,IS_SHOW,MENU_ORDER,MENU_ICON,SYSTEM_OID,REMARK,DEL_FLAG,CREATE_DATE</sql>
+	<select id="queryMenu" resultMap="menuItemInfoMapper"  >
+	    select *  from MENU_ITEM_INFO where DEL_FLAG=0 and PARENT_OID=#{parendId} order by MENU_ORDER 
+	</select>
+	<insert id="insert" >
+	    insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+	    values (#{id}, #{parentOid}, #{menuEName},#{menuCname},#{menuUrl},#{menuType},#{isShow},#{menuOrder},#{menuIcon},#{systemOid},#{remark},#{delFlag},#{createTime})
+	</insert>
+	<update id="update">
+	  update <include refid="sql_table"/>
+		<set >
+			<if test="menuEName != null" >MENU_ENAME = #{menuEName},</if>
+			<if test="menuCname != null" >MENU_CNAME = #{menuCname},</if>
+			<if test="menuUrl != null" >MENU_URL = #{menuUrl},</if>
+			<if test="menuType != null" >MENU_TYPE = #{menuType},</if>
+			<if test="isShow != null" >IS_SHOW = #{isShow},</if>
+			<if test="menuOrder != null" >MENU_ORDER = #{menuOrder},</if>
+			<if test="menuIcon != null" >MENU_ICON = #{menuIcon},</if>
+			<if test="systemOid != null" >SYSTEM_OID = #{systemOid},</if>
+			<if test="remark != null" >REMARK = #{remark}</if>
+		</set>
+    where oid = #{id}
+	</update>
+	
+	<select id="findById" resultMap="menuItemInfoMapper">
+		select * from <include refid="sql_table"/> where oid = #{id}
+	</select>
+
+	<select id="getAuthority" resultMap="menuItemInfoMapper">
+		select * from <include refid="sql_table"/> where
+		MENU_URL=#{url} AND OID IN(SELECT MENU_OID from AUTHORITY_MENU where ROLE_OID IN(select ROLE_OID from AUTHORITY_USER_ROLE where USER_OID=#{userId}))
+	</select>
+
+
+</mapper>

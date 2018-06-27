@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/ProjectTaskMapper" >
+
+    <resultMap id="ProjectTaskMap" type="com.pmcc.soft.week.domain.ProjectTask">
+        <id property="oid" column="OID" />
+        <result property="projectOid" column="PROJECT_OID"/>
+        <result property="taskName" column="TASK_NAME"/>
+        <result property="responsiblePersonOid" column="RESPONSIBLE_PERSON_OID" />
+        <result property="responsiblePersonName" column="RESPONSIBLE_PERSON_NAME" />
+        <result property="startTime" column="START_TIME" />
+        <result property="endTime" column="END_TIME" />
+        <result property="approvalPerson" column="APPROVAL_PERSON"/>
+        <result property="taskContent" column="TASK_CONTENT" />
+        <result property="rptPerson" column="RPT_PERSON" />
+        <result property="rptTime" column="RPT_TIME" />
+        <result property="taskStatus" column="TASK_STATUS"/>
+        <result property="taskLevel" column="TASK_LEVEL" />
+        <result property="parentTaskOid" column="PARENT_TASK_OID" />
+        <result property="hasStar" column="HAS_STAR" />
+        <result property="planTypeOid" column="PLAN_TYPE_OID" />
+        <result property="planTimeType" column="PLAN_TIME_TYPE" />
+        <result property="year" column="YEAR" />
+        <result property="month" column="MONTH" />
+        <result property="week" column="WEEK" />
+        <result property="quarter" column="QUARTER" />
+        <result property="taskCount" column="TASK_COUNT" />
+    </resultMap>
+
+    <sql id="sql_columns">
+        OID,
+        PROJECT_OID,
+        TASK_NAME,
+        RESPONSIBLE_PERSON_OID,
+        RESPONSIBLE_PERSON_NAME,
+        START_TIME,
+        END_TIME,
+        APPROVAL_PERSON,
+        TASK_CONTENT,
+        RPT_PERSON,
+        RPT_TIME,
+        TASK_STATUS,
+        TASK_LEVEL,
+        PARENT_TASK_OID,
+        HAS_STAR,
+        PLAN_TYPE_OID,
+        PLAN_TIME_TYPE,
+        YEAR,
+        MONTH,
+        WEEK,
+        QUARTER
+    </sql>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+   <sql id="sql_order">ORDER BY RPT_TIME DESC</sql>
+
+
+    <sql id="sql_table">PROJECT_TASK</sql>
+    <!-- 分页查询 -->
+    <select id="findById" resultMap="ProjectTaskMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <if test=" projectOid != null and projectOid !=''" >where PROJECT_OID =#{projectOid}</if>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <select id="queryAllTask" resultMap="ProjectTaskMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where PROJECT_OID =#{projectOid}
+        AND PLAN_TYPE_OID=0
+        AND TASK_LEVEL =#{taskLevel}
+        ORDER BY RPT_TIME DESC
+    </select>
+
+    <select id="queryTask" resultMap="ProjectTaskMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where PROJECT_OID =#{projectOid}
+        AND PLAN_TYPE_OID=0
+        AND PARENT_TASK_OID =#{parentTaskOid}
+        ORDER BY RPT_TIME DESC
+    </select>
+
+    <select id="findByOid" resultMap="ProjectTaskMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where OID =#{oid}
+    </select>
+
+    <select id="findTaskByOid" resultMap="ProjectTaskMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where PARENT_TASK_OID =#{oid}
+        ORDER BY RPT_TIME DESC
+    </select>
+
+    <select id="findTaskCount" resultMap="ProjectTaskMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where PROJECT_OID =#{projectOid}
+
+    </select>
+
+    <select id="findTaskCountByResponsiblePersonName" resultMap="ProjectTaskMap" >
+        select
+        COUNT(OID) TASK_COUNT,RESPONSIBLE_PERSON_NAME,RESPONSIBLE_PERSON_OID
+        from
+        <include refid="sql_table"/>
+        where PROJECT_OID =#{projectOid}
+        <if test="taskStatus == 1" >
+            AND TASK_STATUS = '1'
+        </if>
+        GROUP BY RESPONSIBLE_PERSON_OID,RESPONSIBLE_PERSON_NAME
+    </select>
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{oid},
+        #{projectOid},
+        #{taskName},
+        #{responsiblePersonOid},
+        #{responsiblePersonName},
+        #{startTime},
+        #{endTime},
+        #{approvalPerson},
+        #{taskContent},
+        #{rptPerson},
+        #{rptTime},
+        #{taskStatus},
+        #{taskLevel},
+        #{parentTaskOid},
+        #{hasStar},
+        #{planTypeOid},
+        #{planTimeType},
+        #{year},
+        #{month},
+        #{week},
+        #{quarter}
+        )
+    </insert>
+
+    <!--<update id="delete">-->
+        <!--update <include refid="sql_table"/>-->
+        <!--<set >-->
+            <!--DEL_FLAG = #{delFlag}-->
+        <!--</set>-->
+        <!--where ID = #{id}-->
+    <!--</update>-->
+
+    <insert id="save">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{oid},
+        #{projectOid},
+        #{taskName},
+        #{responsiblePersonOid},
+        #{responsiblePersonName},
+        #{startTime},
+        #{endTime},
+        #{approvalPerson},
+        #{taskContent},
+        #{rptPerson},
+        #{rptTime},
+        #{taskStatus},
+        #{taskLevel},
+        #{parentTaskOid},
+        #{hasStar},
+        #{planTypeOid},
+        #{planTimeType},
+        #{year},
+        #{month},
+        #{week},
+        #{quarter}
+        )
+    </insert>
+    <update id="modifyStatus">
+        update <include refid="sql_table"/>
+        <set >
+            TASK_STATUS = #{taskStatus}
+        </set>
+        where OID = #{oid}
+    </update>
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            TASK_NAME = #{taskName},
+            RESPONSIBLE_PERSON_OID = #{responsiblePersonOid},
+            RESPONSIBLE_PERSON_NAME = #{responsiblePersonName},
+            START_TIME = #{startTime},
+            END_TIME = #{endTime},
+            APPROVAL_PERSON = #{approvalPerson},
+            TASK_CONTENT = #{taskContent},
+            RPT_PERSON = #{rptPerson},
+            RPT_TIME = #{rptTime}
+        </set>
+        where OID = #{oid}
+    </update>
+
+
+    <delete id="deleteTask">
+        delete   from
+        <include refid="sql_table"/>
+        where oid = #{oid}
+    </delete>
+    <select id="queryAllPlan" resultMap="ProjectTaskMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where TASK_LEVEL =#{taskLevel}
+        <if test="year!=null and year!=''">and YEAR =#{year}</if>
+        <if test="week!=null and week!=''">and WEEk =#{week}</if>
+        <if test="month!=null and month!=''">and MONTH =#{month}</if>
+        <if test="quarter!=null and quarter!=''">and QUARTER =#{quarter}</if>
+        <if test="planTimeType!=null and planTimeType!=''">and PLAN_TIME_TYPE =#{planTimeType}</if>
+                ORDER  BY  RPT_TIME desc
+    </select>
+
+    <select id="queryPlan" resultMap="ProjectTaskMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where   PARENT_TASK_OID =#{parentTaskOid} ORDER  BY  RPT_TIME desc
+    </select>
+    <update id="updateHasStar">
+        update <include refid="sql_table"/>
+        SET  HAS_STAR=#{hasStar}
+        WHERE  OID=#{oid}
+    </update>
+    <update id="updateProjectPlan">
+        update  <include refid="sql_table"/>
+        set
+        <if test="taskName!=null and taskName!=''">
+            TASK_NAME =#{taskName}
+        </if>
+        <if test="responsiblePersonName!=null and responsiblePersonName!=''">
+            RESPONSIBLE_PERSON_OID=#{responsiblePersonOid},
+            RESPONSIBLE_PERSON_NAME = #{responsiblePersonName}
+        </if>
+        <if test="startTime!=null and startTime!=''">
+            START_TIME=#{startTime}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            END_TIME=#{endTime}
+        </if>
+        <if test="approvalPerson!=null and approvalPerson!=''">
+            APPROVAL_PERSON=#{approvalPerson}
+        </if>
+        <if test="taskContent!=null and taskContent!=''">
+            TASK_CONTENT=#{taskContent}
+        </if>
+        WHERE  OID=#{oid}
+    </update>
+
+    <select id="findTaskForReport" resultMap="ProjectTaskMap">
+        SELECT
+        TASK_NAME,
+         TASK_STATUS
+        FROM
+        <include refid="sql_table"/>
+        WHERE RESPONSIBLE_PERSON_OID=#{responsiblePersonOid}
+        AND START_TIME &lt;=#{rptTime} AND END_TIME &gt;=#{rptTime}
+    </select>
+
+    <select id="findTaskForWeek" resultMap="ProjectTaskMap">
+        SELECT
+        TASK_NAME,
+        TASK_STATUS
+        FROM
+        <include refid="sql_table"/>
+        WHERE RESPONSIBLE_PERSON_OID=#{responsiblePersonOid}
+        AND START_TIME  BETWEEN #{firstDate} AND #{lastDate} OR
+        END_TIME BETWEEN #{firstDate} AND  #{lastDate}
+    </select>
+
+</mapper>
+

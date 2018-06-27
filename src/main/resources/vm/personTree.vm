@@ -1,0 +1,95 @@
+<label class="col-sm-2 control-label">:</label>
+<label class="select">
+    <label class="input">
+##        <input type="text" class="text"  id="leavePersonName" name="leavePersonName" readonly="true">
+        <input type="text" class="text"  id="" name="" >
+    </label>
+    <input type="hidden" class="text"  id="leavePersonId" name="leavePersonId">
+</label>
+<script>
+   function checkPerson(){
+       var leavePersonId = "";
+       var leavePersonName = "";
+       swal({
+                   title: '<h4 class="modal-title"><p>日志接收人</p></h4>',
+                   text: '<div class="modal-body no-padding"><div class="custom-scroll table-responsive" style="height:250px; overflow-y: auto;"><div id="organTree" style="text-align: left;"></div></div></div>',
+                   html: true,
+                   allowOutsideClick:true
+               },
+               function(){
+                   $('#leavePersonId').val(leavePersonId);
+                   $('#leavePersonName').val(leavePersonName);
+                   //不加这段代码，在点击其他弹出框的时候会导致organTree里的内容显示，
+                   // 加了之后消除organTree里的内容时弹出框正常显示
+                   swal("","","success");
+
+               });
+       loadScript("/smartAdmin/js/plugin/bootstraptree/bootstrap-tree.min.js");
+       loadScript("/smartAdmin/js/plugin/bootstraptree/bootstrap-treeview.js", renderTreeSweet);
+       function renderTreeSweet() {
+           $.ajax({
+               type: "GET",
+               url: '/organization/queryAlltree.do',
+               data: {},
+               success: function (data) {
+                   $('#organTree').treeview({
+                       data: data,
+                       multiSelect:true,
+                       onNodeSelected: function (event, data) {
+                           if(data.icon=="glyphicon glyphicon-tower"){
+                               return;
+                           }else{
+                               var treeFlag = true;
+                               for(var i = 0;i<leavePersonId.split(",").length;i++){
+                                   if(data.href == leavePersonId.split(",")[i]){
+                                       treeFlag = false;
+                                   }
+                               }
+                               if(treeFlag) {
+                                   if (leavePersonName == "") {
+                                       leavePersonName = data.text;
+                                   } else {
+                                       leavePersonName += "," + data.text;
+                                   }
+
+                                   if (leavePersonId == "") {
+                                       leavePersonId = data.href;
+                                   } else {
+                                       leavePersonId += "," + data.href;
+                                   }
+                               }
+                           }
+
+                       },
+                       onNodeUnselected:function(event, data){
+
+                           var treeFlag = true;
+                           var leavePersonIds = leavePersonId.split(",");
+                           var leavePersonNames = leavePersonName.split(",");
+                           leavePersonName ="";
+                           leavePersonId = "";
+                           for(var i = 0;i<leavePersonIds.length;i++){
+                               treeFlag = true;
+                               if(data.href == leavePersonIds[i]){
+                                   treeFlag = false;
+                               }
+                               if(treeFlag){
+                                   if(leavePersonId == ""){
+                                       leavePersonId = leavePersonIds[i];
+                                       leavePersonName = leavePersonNames[i];
+                                   }else{
+                                       leavePersonId += "," + leavePersonIds[i];
+                                       leavePersonName += "," + leavePersonNames[i];
+                                   }
+                               }
+                           }
+                       }
+                   });
+               },
+               // 调用出错执行的函数
+               error: function () {
+               }
+           });
+       }
+   }
+</script>

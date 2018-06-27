@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/groupDiscussMapper" >
+
+    <resultMap id="groupDiscussMap" type="com.pmcc.soft.week.domain.GroupDiscuss">
+        <id property="id" column="OID" />
+        <result property="groupDiscussOid" column="GROUP_DISCUSS_OID"/>
+        <result property="groupInfoOid" column="GROUP_INFO_OID"/>
+        <result property="discussType" column="DISCUSS_TYPE" />
+        <result property="discussTitle" column="DISCUSS_TITLE" />
+        <result property="discussion" column="DISCUSSION" />
+        <result property="browseNumber" column="BROWSE_NUMBER" />
+        <result property="replyPersonNumber" column="REPLY_PERSON_NUMBER" />
+        <result property="rptPerson" column="RPT_PERSON" />
+        <result property="rptDate" column="RPT_DATE" />
+        <result property="modifiedPerson" column="MODIFIED_PERSON" />
+        <result property="modifiedDate" column="MODIFIED_DATE" />
+        <result property="lockFlag" column="LOCK_FLAG" />
+        <result property="delFlag" column="DEL_FLAG" />
+        <result property="groupName" column="GROUP_NAME" />
+    </resultMap>
+
+    <sql id="sql_columns">
+        OID,GROUP_DISCUSS_OID,GROUP_INFO_OID,DISCUSS_TYPE,DISCUSS_TITLE,DISCUSSION,BROWSE_NUMBER,
+          REPLY_PERSON_NUMBER,RPT_PERSON,RPT_DATE,MODIFIED_PERSON,MODIFIED_DATE,LOCK_FLAG,DEL_FLAG
+    </sql>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+    <sql id="sql_order">ORDER BY RPT_DATE DESC </sql>
+
+
+
+    <sql id="sql_table">GROUP_DISCUSS</sql>
+
+    <!-- 分页查询 -->
+    <select id="query" resultMap="groupDiscussMap"  >
+        select
+        <include refid="sql_page_init"/>
+        a.OID,a.GROUP_DISCUSS_OID,a.GROUP_INFO_OID,(select c.GROUP_NAME from GROUP_INFO c where c.OID=a.GROUP_INFO_OID) AS GROUP_NAME,
+        a.DISCUSS_TYPE,a.DISCUSS_TITLE,a.DISCUSSION,a.BROWSE_NUMBER,
+        a.REPLY_PERSON_NUMBER,(SELECT b.USER_CNAME from PERSON_INFO b where b.OID= a.RPT_PERSON) as RPT_PERSON,a.RPT_DATE,
+        a.MODIFIED_PERSON,a.MODIFIED_DATE,a.LOCK_FLAG,a.DEL_FLAG
+        from
+        <include refid="sql_table"/> a
+        where a.DEL_FLAG=0 AND  a.LOCK_FLAG =0
+        <if test=" groupInfoOid != null and groupInfoOid !=''" >and a.GROUP_INFO_OID =#{groupInfoOid}</if>
+        <include refid="sql_page_end"/>
+    </select>
+    <!-- 查询最新的不同组下的帖子-->
+    <select id="queryNew" resultMap="groupDiscussMap"  >
+        select top 1
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG='0' AND LOCK_FLAG='0' AND GROUP_INFO_OID =#{groupInfoOid} ORDER BY RPT_DATE DESC
+    </select>
+
+    <select id="findById" resultMap="groupDiscussMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <if test=" _parameter != null" >
+            where oid = #{_parameter}
+        </if>
+        order by oid
+    </select>
+
+
+    <delete id="delete">
+        UPDATE
+        <include refid="sql_table"/>
+        SET DEL_FLAG=1
+        where oid = #{id}
+    </delete>
+
+
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            <if test="groupDiscussOid != null" >GROUP_DISCUSS_OID = #{groupDiscussOid},</if>
+            <if test="groupInfoOid != null" >GROUP_INFO_OID = #{groupInfoOid},</if>
+            <if test="discussType != null" >DISCUSS_TYPE = #{discussType},</if>
+            <if test="discussTitle != null" >DISCUSS_TITLE = #{discussTitle},</if>
+            <if test="discussion != null" >DISCUSSION = #{discussion},</if>
+            <if test="browseNumber != null" >BROWSE_NUMBER = #{browseNumber},</if>
+            <if test="replyPersonNumber != null" >REPLY_PERSON_NUMBER = #{replyPersonNumber},</if>
+            <if test="rptPerson != null" >RPT_PERSON = #{rptPerson},</if>
+            <if test="rptDate != null" >RPT_DATE = #{rptDate},</if>
+            <if test="modifiedPerson != null" >MODIFIED_PERSON = #{modifiedPerson},</if>
+            <if test="modifiedDate != null" >MODIFIED_DATE = #{modifiedDate},</if>
+            <if test="lockFlag != null" >LOCK_FLAG = #{lockFlag},</if>
+        </set>
+        where oid = #{id}
+    </update>
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{id},#{groupDiscussOid},#{groupInfoOid},#{discussType},#{discussTitle},#{discussion},
+          #{browseNumber},#{replyPersonNumber},#{rptPerson},#{rptDate},#{modifiedPerson},
+            #{modifiedDate},#{lockFlag},#{delFlag})
+    </insert>
+
+</mapper>
+

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/ApprovalDataMapper">
+
+    <resultMap id="approvalDataMap" type="com.pmcc.soft.week.domain.ApprovalData">
+        <id property="id" column="ID"/>
+        <result property="controlType" column="CONTROL_TYPE"/>
+        <result property="controlKey" column="CONTROL_KEY"/>
+        <result property="controlDisplay" column="CONTROL_DISPLAY"/>
+        <result property="controlValue" column="CONTROL_VALUE"/>
+        <result property="index" column="INDEX"/>
+        <result property="itemIndex" column="ITEM_INDEX"/>
+        <result property="rptPersonId" column="RPT_PERSON_ID"/>
+        <result property="rptDate" column="RPT_DATE"/>
+        <result property="approvalHeadId" column="APPROVAL_HEAD_ID"/>
+        <result property="controlTitle" column="CONTROL_TITLE"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0">
+            ${topA} * FROM
+            (
+            SELECT ${topB} ROW_NUMBER() OVER (
+            <include refid="sql_order"/>
+            ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0">
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0">
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+    <sql id="sql_table">APPROVAL_DATA</sql>
+
+    <sql id="sql_columns">
+        ID,
+        CONTROL_TYPE,
+        CONTROL_KEY,
+        CONTROL_DISPLAY,
+        CONTROL_VALUE,
+        [INDEX],
+        ITEM_INDEX,
+        RPT_PERSON_ID,
+        RPT_DATE,
+        APPROVAL_HEAD_ID,
+        CONTROL_TITLE
+    </sql>
+
+    <insert id="save">
+        insert INTO
+        <include refid="sql_table"/>
+        (<include refid="sql_columns"/>)
+        values
+        (#{id},
+        #{controlType},
+        #{controlKey},
+        #{controlDisplay},
+        #{controlValue},
+        #{index},
+        #{itemIndex},
+        #{rptPersonId},
+        #{rptDate},
+        #{approvalHeadId},
+        #{controlTitle}
+        )
+    </insert>
+
+    <select id="queryByApprovalHeadId" resultMap="approvalDataMap">
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE APPROVAL_HEAD_ID = #{approvalHeadId}
+        ORDER BY  [INDEX]
+    </select>
+
+    <!--*******************手机端接口***开始***by LvXL*******************-->
+    <!--查询-->
+    <select id="query" resultMap="approvalDataMap">
+
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE 1 = 1
+
+        <if test="id != null">and ID = #{id}</if>
+        <if test="rptPersonId != null">and RPT_PERSON_ID = #{rptPersonId}</if>
+
+        <include refid="sql_order"/>
+
+    </select>
+
+    <!--*******************手机端接口***结束***by LvXL*******************-->
+
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/taskWorkHourMapper" >
+
+    <resultMap id="TaskWorkHourMap" type="com.pmcc.soft.week.domain.ProjectTaskWorkHour">
+        <id property="oid" column="OID" />
+        <result property="taskOid" column="TASK_OID"/>
+        <result property="workHourName" column="WORKHOUR_NAME"/>
+        <result property="workHourDate" column="WORKHOUR_DATE" />
+        <result property="workHourContent" column="WORKHOUR_CONTENT" />
+        <result property="workHour" column="WORKHOUR" />
+    </resultMap>
+
+    <sql id="sql_columns">
+        OID,
+        TASK_OID,
+        WORKHOUR_NAME,
+        WORKHOUR_DATE,
+        WORKHOUR_CONTENT,
+        WORKHOUR
+    </sql>
+
+    <sql id="sql_table">TASK_WORKHOUR</sql>
+
+    <insert id="insertWorkHour">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{oid},
+        #{taskOid},
+        #{workHourName},
+        #{workHourDate},
+        #{workHourContent},
+        #{workHour}
+        )
+    </insert>
+    <delete id="deleteWorkHour">
+        delete   from
+        <include refid="sql_table"/>
+        where oid = #{oid}
+    </delete>
+
+    <delete id="deleteWorkHourByTaskOid">
+        delete   from
+        <include refid="sql_table"/>
+        where TASK_OID = #{taskOid}
+    </delete>
+
+    <update id="updateWorkHour">
+        update <include refid="sql_table"/>
+        <set >
+            TASK_OID = #{taskOid},
+            WORKHOUR_NAME = #{workHourName},
+            WORKHOUR_DATE = #{workHourDate},
+            WORKHOUR_CONTENT = #{workHourContent},
+            WORKHOUR = #{workHour}
+        </set>
+        where OID = #{oid}
+    </update>
+
+    <select id="findWorkHourByTaskOid" resultMap="TaskWorkHourMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where TASK_OID =#{taskOid}
+        ORDER BY WORKHOUR_DATE desc
+    </select>
+    <select id="findWorkHourByOid" resultMap="TaskWorkHourMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where OID =#{oid}
+    </select>
+
+</mapper>
+

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/ydpt/ofUserMapper">
+    <resultMap id="ofUserMap" type="com.pmcc.soft.ydpt.domain.OfUser">
+        <id property="username" column="username" />
+        <result property="plainPassword" column="plainPassword"/>
+        <result property="encryptedPassword" column="encryptedPassword"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="creationDate" column="creationDate"/>
+        <result property="modificationDate" column="modificationDate"/>
+    </resultMap>
+
+    <sql id="sql_order">ORDER BY creationDate desc</sql>
+    <sql id="sql_columns">username,plainPassword,encryptedPassword,name,email,creationDate,modificationDate</sql>
+    <sql id="sql_table">ofUser</sql>
+
+    <select id="query" resultMap="ofUserMap"  >
+        select
+          <include refid="sql_columns"/>
+        from
+          <include refid="sql_table"/>
+        where 1=1
+        <if test="username != null or name != null" >
+            and (username LIKE '%' + #{username} + '%' or name LIKE '%' + #{username} + '%')
+        </if>
+        <include refid="sql_order"/>
+    </select>
+
+    <!--and (username = #{username}LIKE or name= #{username})-->
+    <!--'%' + #{username} + '%'-->
+
+    <delete id="delete">
+        delete from
+          <include refid="sql_columns"/>
+        where  username = #{username}
+    </delete>
+
+    <insert id="insert" >
+        insert into <include refid="sql_table"/>
+          (<include refid="sql_columns"/>)
+        values
+          (#{username},#{plainPassword},#{encryptedPassword},#{name},#{email},#{creationDate},#{modificationDate})
+    </insert>
+    
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            <if test="plainPassword != null" >plainPassword = #{plainPassword},</if>
+            <if test="encryptedPassword != null" >encryptedPassword = #{encryptedPassword},</if>
+            <if test="name != null" >name = #{name},</if>
+            <if test="email != null" >email = #{email},</if>
+            <if test="creationDate != null" >creationDate = #{creationDate},</if>
+			<if test="modificationDate != null" >modificationDate = #{modificationDate},</if>
+        </set>
+        where
+        username = #{username}
+    </update>
+    
+
+
+
+</mapper>

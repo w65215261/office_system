@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/replyDiscussMapper" >
+
+    <resultMap id="replyDiscussMap" type="com.pmcc.soft.week.domain.ReplyDiscuss">
+        <id property="id" column="OID" />
+        <result property="groupDiscussOid" column="GROUP_DISCUSS_OID"/>
+        <result property="replyType" column="REPLY_TYPE"/>
+        <result property="reply" column="REPLY" />
+        <result property="peplyOid" column="PEPLY_OID" />
+        <result property="replyDate" column="REPLY_DATE" />
+        <result property="modifiedPerson" column="MODIFIED_PERSON" />
+        <result property="modifiedDate" column="MODIFIED_DATE" />
+        <result property="delFlag" column="DEL_FLAG" />
+        <result property="peplyName" column="PEPLY_NAME" />
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+    <sql id="sql_order">ORDER BY REPLY_DATE ASC </sql>
+
+    <sql id="sql_columns">
+        OID,GROUP_DISCUSS_OID,REPLY_TYPE,REPLY,PEPLY_OID,REPLY_DATE,MODIFIED_PERSON,
+        MODIFIED_DATE,DEL_FLAG
+    </sql>
+
+    <sql id="sql_table">REPLY_DISCUSS</sql>
+
+    <!-- 分页查询 -->
+    <select id="query" resultMap="replyDiscussMap"  >
+        select
+        <include refid="sql_page_init"/>
+        a.OID,a.GROUP_DISCUSS_OID,a.REPLY_TYPE,a.REPLY,a.PEPLY_OID,( SELECT b.USER_CNAME from PERSON_INFO b where b.OID= a.PEPLY_OID ) AS PEPLY_NAME,
+        a.REPLY_DATE,a.MODIFIED_PERSON,
+        a.MODIFIED_DATE,a.DEL_FLAG
+        from
+        <include refid="sql_table"/> a
+        where a.DEL_FLAG=0
+        <if test=" id != null and id !=''" >and a.OID =#{id}</if>
+        <if test=" groupDiscussOid != null and groupDiscussOid !=''" >and a.GROUP_DISCUSS_OID =#{groupDiscussOid}</if>
+        <include refid="sql_page_end"/>
+    </select>
+
+
+    <select id="findById" resultMap="replyDiscussMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <if test=" _parameter != null" >
+            where oid = #{_parameter}
+        </if>
+        order by oid
+    </select>
+
+
+    <delete id="delete">
+        UPDATE
+        <include refid="sql_table"/>
+        SET DEL_FLAG=1
+        where oid = #{id}
+    </delete>
+
+
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{id},#{groupDiscussOid},#{replyType},#{reply},#{peplyOid},#{replyDate},
+        #{modifiedPerson},#{modifiedDate},#{delFlag})
+    </insert>
+
+</mapper>
+

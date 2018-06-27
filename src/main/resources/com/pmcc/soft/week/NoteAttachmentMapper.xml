@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/NoteAttachmentMapper" >
+
+    <resultMap id="noteAttachmentMap" type="com.pmcc.soft.week.domain.NoteAttachment">
+        <id property="id" column="oid" />
+        <result property="noteOid" column="NOTE_OID"/>
+        <result property="fileName" column="FILE_NAME"/>
+        <result property="fileUrl" column="FILE_URL"/>
+        <result property="fileMathName" column="FILE_MATH_NAME"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="creatorId" column="CREATOR_ID"/>
+        <result property="modifyDate" column="MODIFY_DATE"/>
+        <result property="modifyId" column="MODIFY_ID"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="rptPerson" column="RPT_PERSON"/>
+    </resultMap>
+
+    <sql id="sql_columns">OID,NOTE_OID,FILE_NAME,FILE_URL,FILE_MATH_NAME,CREATE_DATE,CREATOR_ID,MODIFY_DATE,MODIFY_ID,DEL_FLAG,RPT_PERSON</sql>
+    <sql id="sql_table">NOTE_ATTACHMENT</sql>
+    <sql id="sql_order">ORDER BY CREATE_DATE  desc</sql>
+
+    <insert id="insert">
+        insert <include refid="sql_table"/>
+        ( <include refid="sql_columns"/> )
+        values
+        (#{id},#{noteOid},#{fileName},#{fileUrl},#{fileMathName},#{createDate},#{creatorId},#{modifyDate},#{modifyId},#{delFlag},#{rptPerson})
+    </insert>
+
+    <delete id="deleteAttachment">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where oid = #{id}
+    </delete>
+
+    <update id="restoreAttachment">
+        update  <include refid="sql_table"/> set DEL_FLAG=0 where NOTE_OID = #{noteOid}
+    </update>
+
+
+    <delete id="deleteAttachmentByNoteOid">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where NOTE_OID = #{noteOid}
+    </delete>
+
+    <delete id="deleteAttachmentByNoteOidTrue">
+        DELETE  <include refid="sql_table"/> WHERE NOTE_OID = #{noteOid}
+    </delete>
+
+    <select id="findNoteAttachmentByNoteOid" resultMap="noteAttachmentMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where NOTE_OID = #{noteOid}
+        AND DEL_FLAG=0
+        <include refid="sql_order"/>
+    </select>
+
+</mapper>

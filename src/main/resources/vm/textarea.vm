@@ -1,0 +1,9 @@
+<section class="no-padding">
+    <label class="label col col-2" style="text-align: right"><span class="redText">*</span>${controlTitle}:</label>
+    <section class="col col-4  no-padding">
+        <label class="textarea textarea-expandable">
+            <textarea id="${controlKey}" name="${controlKey}"  rows="6"  cols="120" class="custom-scroll" placeholder="${placeHolder}" style="height: 80px;"></textarea>
+        </label>
+    </section>
+</section>
+<br><br><br><br>

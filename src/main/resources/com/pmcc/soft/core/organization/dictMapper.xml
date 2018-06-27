@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/dictMapper">
+	<resultMap id="dictMap" type="com.pmcc.soft.core.organization.domain.Dict">
+		<id property="id" column="oid" />
+		<result property="dictName" column="DICTNAME"/>
+		<result property="dictId" column="DICTID"/>
+		<result property="dictType" column="DICTTYPE"/>
+		<result property="parentId" column="PARENTID"/>
+		<result property="rank" column="RANK"/>
+		<result property="sortNo" column="SORTNO"/>
+		<result property="py" column="PY"/>
+		<result property="status" column="STATUS"/>
+	</resultMap>
+	
+	
+	<sql id='sql_page_init'>
+    	<if test=" initPage == 0" >
+		 ${topA}  * FROM 
+		 (
+		    SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+		
+    	</if>
+    </sql>
+    
+    <sql id='sql_page_end'>
+    	<if test="initPage == 0" >
+		   ) AS initPage
+		WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+		ORDER BY RowNum
+    	</if>
+    	<if test="initPage != 0" > 
+		         <include refid="sql_order"/>  
+    	</if>
+    </sql>
+    <sql id="sql_order">ORDER BY SORTNO asc</sql>
+	<sql id="sql_columns">OID,DICTNAME,DICTID,DICTTYPE,PARENTID,RANK,SORTNO,PY,STATUS</sql>
+	<sql id="sql_table">DICT</sql>
+	<sql id="sql_where">where STATUS='0'
+				   	<if test=" id != null" >
+	   					and oid =#{id}
+					</if>
+					<if test=" parentId != null" >
+	   				 and PARENTID = #{parentId}
+	 		   </if>
+					
+	</sql>
+	
+	<select id="query" resultMap="dictMap"  >
+		select  
+			<include refid="sql_page_init"/>
+		    <include refid="sql_columns"/>
+		from 
+		    <include refid="sql_table"/>  
+			<include refid="sql_where"/>  
+			<include refid="sql_page_end"/>
+	</select>
+	
+	<!-- 查询父节点树-->
+	<select id="queryParent" resultMap="dictMap"  >
+	    select OID as id ,DICTNAME dictName,DICTID dictId,DICTTYPE dictType,PARENTID parentId,RANK rank,
+		SORTNO sortNo,PY py,STATUS status  
+	    from DICT 
+	    	where PARENTID=#{parendId} 
+		    order by SORTNO
+	</select>
+	
+	<select id="findById" resultType="com.pmcc.soft.core.organization.domain.Dict" >
+    	select OID as id ,DICTNAME dictName,DICTID dictId,DICTTYPE dictType,PARENTID parentId,RANK rank,
+		SORTNO sortNo,PY py,STATUS status
+	    from DICT
+		   where oid = #{id}
+    </select>
+	
+	<delete id="delete">
+	    delete from DICT
+	    where oid = #{id}
+	</delete>
+	
+	<insert id="insert" >
+	    insert into DICT (OID, DICTNAME, DICTID,DICTTYPE,PARENTID,RANK,SORTNO,PY,STATUS)
+	    values (#{id}, #{dictName},#{dictId}, #{dictType}, #{parentId},#{rank},#{sortNo},#{py},#{status})
+	</insert>
+	
+	<update id="update">
+    update DICT
+		<set >
+			<if test="dictName != null" >
+        DICTNAME = #{dictName},
+			</if>
+			<if test="dictId != null" >
+        DICTID = #{dictId},
+			</if>
+			<if test="dictType != null" >
+        DICTTYPE = #{dictType},
+			</if>
+			<if test="parentId != null" >
+        PARENTID = #{parentId},
+			</if>
+			<if test="rank != null" >
+        RANK = #{rank},
+			</if>
+			<if test="sortNo != null" >
+        SORTNO = #{sortNo},
+			</if>
+			<if test="py != null" >
+        PY = #{py},
+			</if>
+				<if test="status != null" >
+        STATUS = #{status}
+			</if>
+		</set>
+    where oid = #{id}
+	</update>
+	
+	<select id="queryCommbo" resultMap="dictMap">
+		select * from DICT
+			where STATUS=0
+			and (PARENTID!='-1' or PARENTID is  null)
+			and DICTTYPE= #{type}
+			order by SORTNO
+		
+	</select>
+	
+	<select id="queryCommboByParentId" resultMap="dictMap">
+		select * from DICT
+			where STATUS=0
+			and PARENTID = #{parentId} 
+			
+			order by SORTNO
+		
+	</select>
+	<select id="findDictByName" resultType="com.pmcc.soft.core.organization.domain.Dict" >
+		select OID as id ,DICTNAME dictName,DICTID dictId,DICTTYPE dictType,PARENTID parentId,RANK rank,
+		SORTNO sortNo,PY py,STATUS status
+		from DICT
+		where DICTNAME = #{dictName}
+	</select>
+</mapper>

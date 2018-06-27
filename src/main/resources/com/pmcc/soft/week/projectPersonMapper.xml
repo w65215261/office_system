@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/projectPersonMapper" >
+
+    <resultMap id="ProjectPersonMap" type="com.pmcc.soft.week.domain.ProjectPersonRela">
+        <id property="oid" column="OID" />
+        <result property="projectOid" column="PROJECT_OID"/>
+        <result property="personOid" column="PERSON_OID"/>
+        <result property="delFlag" column="DEL_FLAG" />
+        <result property="rptPerson" column="RPT_PERSON" />
+        <result property="rptTime" column="RPT_TIME" />
+        <result property="personName" column="PERSON_NAME" />
+        <association property="project"  javaType="com.pmcc.soft.week.domain.Project">
+            <id property="id" column="OID" />
+            <result property="projectName" column="PROJECT_NAME"/>
+            <result property="projectManager" column="PROJECT_MANAGER"/>
+            <result property="approvePersonId" column="APPROVAL_PERSON_OID"/>
+            <result property="startTime" column="START_TIME" />
+            <result property="endTime" column="END_TIME" />
+            <result property="projectGoal" column="PROJECT_GOAL" />
+            <result property="visibility" column="VISIBILITY" />
+            <result property="delFlag" column="DEL_FLAG" />
+            <result property="rptPerson" column="RPT_PERSON" />
+            <result property="projectStatus" column="PROJECT_STATUS" />
+            <result property="projectSchedule" column="PROJECT_SCHEDULE" />
+            <result property="projectManagerId" column="PROJECT_MANAGER_PERSONID" />
+        </association>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY a.RPT_TIME  desc</sql>
+
+
+
+
+
+    <sql id="sql_columns">
+        OID,
+        PROJECT_OID,
+        PERSON_OID,
+        DEL_FLAG,
+        RPT_PERSON,
+        RPT_TIME,
+        PERSON_NAME
+    </sql>
+
+    <sql id="sql_table">PROJECT_PERSON_RELA</sql>
+    <select id="findByProjectOid" resultMap="ProjectPersonMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and PROJECT_OID =#{projectOid}
+    </select>
+
+    <select id="findByOid" resultMap="ProjectPersonMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and PERSON_OID =#{personOid}
+        and PROJECT_OID =#{projectOid}
+    </select>
+    <select id="findByPersonOid" resultMap="ProjectPersonMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and PERSON_OID =#{personOid}
+    </select>
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{oid},
+        #{projectOid},
+        #{personOid},
+        #{delFlag},
+        #{rptPerson},
+        #{rptTime},
+        #{personName}
+        )
+    </insert>
+
+    <update id="delete">
+        update <include refid="sql_table"/>
+        <set >
+            DEL_FLAG = #{delFlag}
+        </set>
+        where OID = #{oid}
+    </update>
+    <select id="queryProjectPersonRela" resultMap="ProjectPersonMap">
+        SELECT
+        <include refid="sql_page_init"/>
+        b.*
+        FROM  PROJECT_PERSON_RELA a,PROJECT b
+        where a.PROJECT_OID=b.OID and a.DEL_FLAG='0' and b.DEL_FLAG=0 and b.PROJECT_STATUS=0 and a.PERSON_OID=#{personOid}
+        <include refid="sql_page_end"/>
+    </select>
+    <select id="queryProjectPersonRelaStatus" resultMap="ProjectPersonMap">
+        SELECT
+        <include refid="sql_page_init"/>
+        b.*
+        FROM  PROJECT_PERSON_RELA a,PROJECT b
+        where a.PROJECT_OID=b.OID and a.DEL_FLAG='0' and b.DEL_FLAG=0 and b.PROJECT_STATUS=1 and a.PERSON_OID=#{personOid}
+        <include refid="sql_page_end"/>
+    </select>
+</mapper>
+

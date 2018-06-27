@@ -1,0 +1,13 @@
+<section>
+    <label class="label col col-2" style="text-align: right"><span class="redText">*</span>${controlTitle}:</label>
+    <section class="col col-4  no-padding">
+        <label class="select">
+            <select class="input-sm" id="${controlKey}"  name="${controlKey}" style="height: 30px;">
+                #foreach ($option in $options)
+                    <option value='${option.optionValue}'>${option.optionText}</option>
+                #end
+            </select><i class="icon-append fa fa-lock"></i>
+        </label>
+    </section>
+</section>
+<br>

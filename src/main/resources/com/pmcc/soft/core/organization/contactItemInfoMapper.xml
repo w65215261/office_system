@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/contactItemInfoMapper" >
+
+<resultMap id="contactItemInfoMapper" type="com.pmcc.soft.core.organization.domain.ContactItemInfo">
+		<id property="id" column="OID" />
+		<result property="name" column="NAME"/>
+		<result property="sex" column="SEX"/>
+		<result property="officePhone" column="OFFICE_PHONE"/>
+		<result property="mobilePhone" column="MOBILE_PHONE"/>
+		<result property="homePhone" column="HOME_PHONE"/>
+		<result property="email" column="EMAIL"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<association property="unit" column="UNIT" select="com/pmcc/soft/core/organization/personManageMapper.findById"/>
+		<association property="createUser" column="CREATE_USER" select="com/pmcc/soft/core/organization/personManageMapper.findById"/>
+	</resultMap>
+	
+	<sql id='sql_page_init'>
+    	<if test=" initPage == 0" >
+		 ${topA}  * FROM 
+		 (
+		    SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+		
+    	</if>
+    </sql>
+      <sql id='sql_page_end'>
+    	<if test=" initPage == 0" >
+		   ) AS initPage
+		WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+		ORDER BY RowNum
+		
+    	</if>
+    	<if test=" initPage != 0" > 
+		         <include refid="sql_order"/>  
+    	</if>
+    </sql>
+    
+    <sql id="sql_where">where DEL_FLAG = 0
+				   	<if test=" id != null" >
+	   					 and oid =#{id}
+					</if>
+	</sql>
+	
+	<sql id="sql_table">CONTACT_ITEM_INFO</sql>
+	<sql id="sql_columns">OID,NAME,SEX,OFFICE_PHONE,MOBILE_PHONE,HOME_PHONE,EMAIL,UNIT,CREATE_USER,CREATE_DATE,DEL_FLAG</sql>
+	<sql id="sql_order">ORDER BY CREATE_DATE desc</sql>
+	
+	<delete id="delete">
+	    update  <include refid="sql_table"/> set DEL_FLAG=1 where oid = #{id}
+	</delete>
+	
+	<select id="query" resultMap="contactItemInfoMapper"  >
+		select  
+		      <include refid="sql_page_init"/>
+		      <include refid="sql_columns"/>
+		from 
+		      <include refid="sql_table"/>  
+		<include refid="sql_where"/>  
+	    <include refid="sql_page_end"/>
+	</select>
+	
+	
+	
+	<insert id="insert" >
+	    insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+	    values (#{id}, #{name}, #{sex},#{officePhone},#{mobilePhone},#{homePhone},#{email},#{unit},#{createUser},#{createDate},#{delFlag})
+	</insert>
+	
+	<update id="update">
+	  update <include refid="sql_table"/>
+		<set >
+			<if test="name != null" >NAME = #{name},</if>
+			<if test="sex != null" >SEX = #{sex},</if>
+			<if test="officePhone != null" >OFFICE_PHONE = #{officePhone},</if>
+			<if test="mobilePhone != null" >MOBILE_PHONE = #{mobilePhone},</if>
+			<if test="homePhone != null" >HOME_PHONE = #{homePhone},</if>
+			<if test="email != null" >EMAIL = #{email},</if>
+		</set>
+    where oid = #{id}
+	</update>
+	
+</mapper>

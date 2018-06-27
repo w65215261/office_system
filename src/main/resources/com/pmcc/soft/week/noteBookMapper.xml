@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/noteBookMapper" >
+
+    <resultMap id="NoteBookMap" type="com.pmcc.soft.week.domain.NoteBook">
+        <id property="oid" column="OID" />
+        <result property="userOid" column="USER_OID"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="notebookName" column="NOTE_BOOK_NAME" />
+        <result property="notebookCreateTime" column="NOTE_BOOK_CREATE_TIME" />
+    </resultMap>
+
+    <sql id="sql_order">ORDER BY NOTE_BOOK_CREATE_TIME  desc</sql>
+
+    <sql id="sql_columns">
+        OID,
+        USER_OID,
+        DEL_FLAG,
+        NOTE_BOOK_NAME,
+        NOTE_BOOK_CREATE_TIME
+    </sql>
+
+    <sql id="sql_table">NOTE_BOOK</sql>
+
+    <select id="findNoteBooks" resultMap="NoteBookMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and USER_OID =#{userOid}
+        <include refid="sql_order"/>
+    </select>
+
+    <select id="findNoteBookByOid" resultMap="NoteBookMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        and OID =#{noteBookOid}
+    </select>
+
+    <select id="findBooksLength" resultMap="NoteBookMap"  >
+        SELECT oid FROM NOTE_BOOK WHERE  DEL_FLAG = 0 AND USER_OID = #{_parameter}
+    </select>
+
+    <select id="findNoteBookByDeFlag" resultMap="NoteBookMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=1
+        and OID =#{noteBookOid}
+    </select>
+
+    <insert id="addNoteBook">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{oid},
+        #{userOid},
+        #{delFlag},
+        #{notebookName},
+        #{notebookCreateTime}
+        )
+    </insert>
+
+    <update id="restoreNoteBook">
+        update <include refid="sql_table"/>
+        <set >
+            DEL_FLAG=0,
+            NOTE_BOOK_CREATE_TIME = #{notebookCreateTime}
+        </set>
+        where OID = #{oid}
+    </update>
+
+    <update id="deleteNoteBook">
+        update <include refid="sql_table"/>
+        <set >
+            DEL_FLAG=1
+        </set>
+        where OID = #{oid}
+
+    </update>
+
+    <update id="modifyNoteBook">
+        update <include refid="sql_table"/>
+        <set >
+            NOTE_BOOK_NAME=#{notebookName}
+        </set>
+        where OID = #{oid}
+        and DEL_FLAG=0
+    </update>
+
+    <delete id="deleteNoteBookTrue">
+        delete   from
+        <include refid="sql_table"/>
+        where oid = #{notebookOid}
+    </delete>
+</mapper>
+

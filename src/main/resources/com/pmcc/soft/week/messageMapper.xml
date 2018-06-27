@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/messageMapper" >
+
+    <resultMap id="messageMap" type="com.pmcc.soft.week.domain.Message">
+        <id property="id" column="oid" />
+        <result property="messageTitle" column="MESSAGE_TITLE"/>
+        <result property="messageContent" column="MESSAGE_CONTENT"/>
+        <result property="messageToName" column="MESSAGE_TONAME"/>
+        <result property="messageFromName" column="MESSAGE_FROMNAME"/>
+        <result property="messageTo" column="MESSAGE_TO"/>
+        <result property="messageFrom" column="MESSAGE_FROM"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="showFlag" column="SHOW_FLAG"/>
+        <result property="messageFromFlag" column="MESSAGE_FROM_FLAG"/>
+        <result property="messageToFlag" column="MESSAGE_TO_FLAG"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+    <sql id='sql_page_inits'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_orders"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+
+    </sql>
+    <sql id="sql_order">ORDER BY SHOW_FLAG desc,CREATE_DATE desc</sql>
+    <sql id="sql_orders">ORDER BY CREATE_DATE desc</sql>
+
+    <sql id="sql_columns">OID,MESSAGE_TITLE,MESSAGE_CONTENT,MESSAGE_TONAME,MESSAGE_FROMNAME,MESSAGE_TO,MESSAGE_FROM,CREATE_DATE,DEL_FLAG,SHOW_FLAG,MESSAGE_FROM_FLAG,MESSAGE_TO_FLAG</sql>
+    <sql id="sql_table">HT_MESSAGE</sql>
+    <sql id="sql_where">where '0'='0'
+        <if test=" delFlag != null and delFlag !=''" > and DEL_FLAG =#{delFlag}</if>
+        <if test=" showFlag != null and showFlag !=''" > and SHOW_FLAG =#{showFlag}</if>
+        <if test=" id != null and id !=''" >and oid =#{id}</if>
+        <if test="messageTitle!=null and messageTitle !=''">and MESSAGE_TITLE like '%'+ #{messageTitle}+'%'</if>
+        <if test="messageTo!=null and messageTo !=''">and MESSAGE_TO=#{messageTo}</if>
+        <if test="messageFrom!=null and messageFrom !=''">and MESSAGE_FROM=#{messageFrom}</if>
+        <if test="messageFromFlag!=null and messageFromFlag !=''">and MESSAGE_FROM_Flag=#{messageFromFlag}</if>
+        <if test="messageToFlag!=null and messageToFlag !=''">and MESSAGE_TO_Flag=#{messageToFlag}</if>
+        <if test="messageFromName!=null and messageFromName !=''">and MESSAGE_FROMNAME like '%'+#{messageFromName}+'%'</if>
+        <if test="messageToName!=null and messageToName !=''">and MESSAGE_TONAME like '%'+#{messageToName}+'%'</if>
+        <if test="dateFrom!=null and dateFrom !=''">
+            <if test="dateTo!=null and dateTo !=''">
+                and CREATE_DATE between #{dateFrom} and #{dateTo}
+            </if>
+
+        </if>
+    </sql>
+
+    <insert id="insert">
+        insert <include refid="sql_table"/> (OID,MESSAGE_TITLE,MESSAGE_CONTENT,MESSAGE_TONAME,MESSAGE_FROMNAME,MESSAGE_TO,MESSAGE_FROM,CREATE_DATE,DEL_FLAG,SHOW_FLAG,MESSAGE_FROM_FLAG,MESSAGE_TO_FLAG)
+        values (#{id},#{messageTitle},#{messageContent},#{messageToName},#{messageFromName},#{messageTo},#{messageFrom},#{createDate},#{delFlag},#{showFlag},#{messageFromFlag},#{messageToFlag})
+    </insert>
+
+    <delete id="delete">
+       delete from <include refid="sql_table"/>  where oid = #{id}
+    </delete>
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            <if test=" delFlag != null and delFlag !=''" > DEL_FLAG =#{delFlag},</if>
+            <if test="messageTitle != null" >MESSAGE_TITLE = #{messageTitle},</if>
+            <if test=" messageFromFlag != null and messageFromFlag !=''" > Message_From_FLAG =#{messageFromFlag},</if>
+            <if test=" messageToFlag != null and messageToFlag !=''" > Message_To_FLAG =#{messageToFlag},</if>
+            <if test="messageContent != null" >MESSAGE_CONTENT = #{messageContent}</if>
+
+        </set>
+        where oid = #{id}
+    </update>
+
+    <select id="query" resultMap="messageMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <include refid="sql_where"/>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <select id="findById" resultMap="messageMap">
+        select <include refid="sql_columns"/>from <include refid="sql_table"/> where oid = #{id}
+    </select>
+    <select id="queryGarbage" resultMap="messageMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+       WHERE  MESSAGE_FROM=#{messageFrom}  AND  MESSAGE_FROM_FLAG=1 OR MESSAGE_TO=#{messageTo} AND  MESSAGE_TO_FLAG=1
+        <include refid="sql_page_end"/>
+    </select>
+
+    <update id="updateRead">
+        update <include refid="sql_table"/>
+        SET
+           SHOW_FLAG =0
+        where oid = #{id}
+    </update>
+    <select id="queryOut" resultMap="messageMap"  >
+        select
+        <include refid="sql_page_inits"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <include refid="sql_where"/>
+        <include refid="sql_page_end"/>
+    </select>
+</mapper>

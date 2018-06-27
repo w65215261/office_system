@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration >
+<classPathEntry location="c:/jtds-1.2.4.jar" />
+  <context id="context1" >
+  
+    <jdbcConnection driverClass="net.sourceforge.jtds.jdbc.Driver" 
+    connectionURL="jdbc:jtds:sqlserver://1.2.4.106:1433;DatabaseName=YDPT" 
+    userId="sa" 
+    password="hndlhndl" />
+    <javaModelGenerator targetPackage="com.hndl.mobileplatform.model" targetProject="openfire" />
+    <sqlMapGenerator targetPackage="com.hndl.mobileplatform.modelxml" targetProject="openfire" />
+    <javaClientGenerator targetPackage="com.hndl.mobileplatform.dao" targetProject="openfire" type="XMLMAPPER" />
+    <table schema="" tableName="ofMucAffiliation" >
+    </table>
+  </context>
+</generatorConfiguration>

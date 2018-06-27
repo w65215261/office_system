@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/CityIdMapper" >
+
+    <resultMap id="cityIdMap" type="com.pmcc.soft.week.domain.CityNum">
+        <id property="cityId" column="CITYID" />
+        <result property="cityName" column="CITYNAME"/>
+    </resultMap>
+
+    <select id="findCityId" resultMap="cityIdMap"  >
+        select
+        *
+        from
+        CITYID
+        WHERE  cityName=#{CITYNAME}
+    </select>
+</mapper>
+

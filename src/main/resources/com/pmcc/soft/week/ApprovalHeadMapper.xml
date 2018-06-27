@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/ApprovalHeadMapper">
+
+    <resultMap id="approvalHeadMap" type="com.pmcc.soft.week.domain.ApprovalHead">
+        <id property="id" column="ID"/>
+        <result property="type" column="TYPE"/>
+        <result property="workFlowId" column="WORK_FLOW_ID"/>
+        <result property="auditStatus" column="AUDIT_STATUS"/>
+        <result property="dataBlock" column="DATA_BLOCK"/>
+        <result property="orgId" column="ORG_ID"/>
+        <result property="orgCode" column="ORG_CODE"/>
+        <result property="orgName" column="ORG_NAME"/>
+        <result property="rptPersonId" column="RPT_PERSON_ID"/>
+        <result property="rptPersonName" column="RPT_PERSON_NAME"/>
+        <result property="rptDate" column="RPT_DATE"/>
+        <result property="source" column="SOURCE"/>
+    </resultMap>
+
+    <resultMap id="auditDataMap" type="com.pmcc.soft.unit.AuditData">
+        <result property="auditPerson" column="AUDIT_PERSON"/>
+        <result property="auditPersonName" column="AUDIT_PERSON_NAME"/>
+        <result property="auditDate" column="AUDIT_DATE"/>
+        <result property="auditStatus" column="AUDIT_STATUS"/>
+        <result property="auditRemark" column="AUDIT_REMARK"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+    <sql id="sql_table">APPROVAL_HEAD</sql>
+
+    <sql id="sql_columns">
+        ID,
+        TYPE,
+        WORK_FLOW_ID,
+        AUDIT_STATUS,
+        DATA_BLOCK,
+        ORG_ID,
+        ORG_CODE,
+        ORG_NAME,
+        RPT_PERSON_ID,
+        RPT_PERSON_NAME,
+        RPT_DATE,
+        SOURCE
+    </sql>
+
+    <insert id="save">
+        insert INTO
+        <include refid="sql_table"/>
+        (
+        <include refid="sql_columns"/>
+        )
+        values
+        (#{id},
+        #{type},
+        #{workFlowId},
+        #{auditStatus},
+        #{dataBlock},
+        #{orgId},
+        #{orgCode},
+        #{orgName},
+        #{rptPersonId},
+        #{rptPersonName},
+        #{rptDate},
+        #{source}
+        )
+    </insert>
+
+    <!--*******************手机端接口***开始***by LvXL*******************-->
+    <!--查询-->
+    <select id="query" resultMap="approvalHeadMap">
+
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE 1 = 1
+        <if test="id != null">and ID = #{id}</if>
+        <if test="rptPersonId != null  and rptPersonId !=''">and RPT_PERSON_ID = #{rptPersonId}</if>
+        <if test="type != null  and type !=''">and TYPE = #{type}</if>
+        <if test="auditStatus != null  and auditStatus !=''">and AUDIT_STATUS = #{auditStatus}</if>
+        <if test="orgCode != null  and orgCode !=''">and ORG_CODE like #{orgCode}+'%' </if>
+        <if test=" startDate != null and startDate !='' and endDate!=null and endDate!=''" >and RPT_DATE BETWEEN #{startDate} and #{endDate}</if>
+        <if test="idList !=null and idList.size !=0">
+            AND ID in
+            <foreach item="item" index="index" collection="idList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="personIdList !=null and personIdList.size !=0">
+        AND RPT_PERSON_ID IN
+        <foreach item="item" index="index" collection="personIdList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        </if>
+        <include refid="sql_page_end"/>
+    </select>
+
+
+    <!--同意或拒绝操作-->
+    <update id="check">
+        update <include refid="sql_table"/>
+        <set >
+            <if test="auditStatus != null" >AUDIT_STATUS = #{auditStatus},</if>
+            <if test="workFlowId != null" >WORK_FLOW_ID = #{workFlowId}</if>
+        </set>
+        where ID = #{id}
+    </update>
+
+    <!--*******************手机端接口***结束***by LvXL*******************-->
+
+</mapper>

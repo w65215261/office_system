@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/SummarizeReportMapper">
+
+    <resultMap id="summarizeReportMap" type="com.pmcc.soft.week.domain.Report">
+        <id property="id" column="ID"/>
+        <result property="content" column="CONTENT"/>
+        <result property="status" column="STATUS"/>
+        <result property="belongsDate" column="BELONGS_DATE"/>
+        <result property="rptDate" column="RPT_DATE"/>
+        <result property="rtpPersonId" column="RPT_PERSON_ID"/>
+        <result property="rptPersonName" column="RPT_PERSON_NAME"/>
+        <result property="type" column="TYPE"/>
+        <result property="orgId" column="ORGID"/>
+        <result property="orgCode" column="ORGCODE"/>
+        <result property="x" column="X"/>
+        <result property="y" column="Y"/>
+        <result property="xyAddress" column="XY_ADDRESS"/>
+        <result property="doneWork" column="DONE_WORK"/>
+        <result property="undoneWork" column="UNDONE_WORK"/>
+        <result property="teamWork" column="TEAM_WORK"/>
+        <result property="source" column="SOURCE"/>
+        <result property="replayCount" column="REPLAY_COUNT"/>
+        <result property="readCount" column="READ_COUNT"/>
+        <result property="initFlag" column="INIT_FLAG"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+
+    <sql id="sql_columns">
+        ID,
+        CONTENT,
+        STATUS,
+        BELONGS_DATE,
+        RPT_DATE,
+        RPT_PERSON_ID,
+        RPT_PERSON_NAME,
+        TYPE,
+        ORGID,
+        ORGCODE,
+        X,
+        Y,
+        XY_ADDRESS,
+        DONE_WORK,
+        UNDONE_WORK,
+        TEAM_WORK,
+        SOURCE,
+        REPLAY_COUNT,
+        READ_COUNT,
+        INIT_FLAG
+    </sql>
+
+
+    <sql id="sql_table">SUMMARIZE_REPORT</sql>
+
+
+    <select id="searchByOrgIdMap" resultMap="summarizeReportMap">
+        SELECT
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        WHERE TYPE=#{type} and RPT_DATE BETWEEN #{startTime} and #{endTime}
+        AND ORGID IN
+        <foreach item="item" index="index" collection="list"  open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND RPT_PERSON_ID IN
+        <foreach item="item" index="index" collection="personList"  open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <select id="search" resultMap="summarizeReportMap">
+        SELECT
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        WHERE TYPE=#{type} AND  INIT_FLAG=1
+        <if test=" rtpPersonId != null and rtpPersonId !=''" >and RPT_PERSON_ID =#{rtpPersonId}</if>
+        <if test=" orgId != null and orgId !=''" >and ORGID =#{orgId}</if>
+        <if test=" startTime != null and startTime !='' and endTime!=null and endTime!=''" >and RPT_DATE BETWEEN #{startTime} and #{endTime}</if>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <insert id="insert">
+        INSERT  INTO
+        <include refid="sql_table"/>(<include refid="sql_columns" />)
+        VALUES (
+        #{id},
+        #{content},
+        #{status},
+        #{belongsDate},
+        #{rptDate},
+        #{rtpPersonId},
+        #{rptPersonName},
+        #{type},
+        #{orgId},
+        #{orgCode},
+        #{x},
+        #{y},
+        #{xyAddress},
+        #{doneWork},
+        #{undoneWork},
+        #{teamWork},
+        #{source},
+        #{replayCount},
+        #{readCount},
+        #{initFlag}
+        )
+    </insert>
+
+    <select id="queryByReportId" resultMap="summarizeReportMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            ID = #{reportId}
+        </where>
+        <include refid="sql_order"/>
+    </select>
+
+    <update id="update">
+        update<include refid="sql_table"/>
+        <set >
+            <if test="content != null" >CONTENT = #{content},</if>
+            <if test="status != null" >STATUS = #{status},</if>
+            <if test="belongsDate != null" >BELONGS_DATE = #{belongsDate},</if>
+            <if test="rptDate != null" >RPT_DATE = #{rptDate},</if>
+            <if test="rtpPersonId != null" >RPT_PERSON_ID = #{rtpPersonId},</if>
+            <if test="rptPersonName != null" >RPT_PERSON_NAME = #{rptPersonName},</if>
+            <if test="type != null" >TYPE = #{type},</if>
+            <if test="orgId != null" >ORGID = #{orgId},</if>
+            <if test="orgCode != null" >ORGCODE = #{orgCode},</if>
+            <if test="x != null" >X = #{x},</if>
+            <if test="y != null" >Y = #{y},</if>
+            <if test="xyAddress != null" >XY_ADDRESS = #{xyAddress},</if>
+            <if test="doneWork != null" >DONE_WORK = #{doneWork},</if>
+            <if test="undoneWork != null" >UNDONE_WORK = #{undoneWork},</if>
+            <if test="teamWork != null" >TEAM_WORK = #{teamWork},</if>
+            <if test="source != null" >SOURCE = #{source},</if>
+            <if test="replayCount != null" >REPLAY_COUNT = #{replayCount},</if>
+            <if test="readCount != null" >READ_COUNT = #{readCount},</if>
+            INIT_FLAG = 1
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="queryByBelongsDate" resultMap="summarizeReportMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            <if test=" startTime != null and startTime !='' and endTime!=null and endTime!=''" >
+                AND BELONGS_DATE BETWEEN #{startTime} AND #{endTime}
+            </if>
+            AND INIT_FLAG = 0
+            <if test=" rtpPersonId != null and rtpPersonId !=''">
+            AND RPT_PERSON_ID = #{rtpPersonId}
+            </if>
+        </where>
+        <include refid="sql_order"/>
+    </select>
+
+    <select id="queryByRtpPersonId" resultMap="summarizeReportMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            RPT_PERSON_ID = #{rtpPersonId}
+            AND ORGID = #{orgId}
+            <if test=" startTime != null and startTime !=''" >and RPT_DATE &gt;=#{startTime}</if>
+            <if test=" endTime != null and endTime !=''" >and RPT_DATE &lt;=#{endTime}</if>
+            AND INIT_FLAG = 1
+        </where>
+        <include refid="sql_order"/>
+    </select>
+
+    <select id="queryReport" resultMap="summarizeReportMap"  >
+        SELECT
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        FROM
+        (
+            SELECT
+            <include refid="sql_columns"/>
+            FROM SUMMARIZE_REPORT
+            WHERE
+            RPT_PERSON_ID=#{rtpPersonId}
+            AND ORGID = #{orgId}
+            OR ID
+            IN (
+                  SELECT REPORT_ID
+                  FROM SUMMARIZE_REPORT_RECEIVE
+                  WHERE RECEIVE_PERSON_ID = #{rtpPersonId}
+                  AND ORGID = #{orgId}
+                )
+        ) a
+        WHERE
+        0=0
+        <if test=" startTime != null and startTime !=''" >and a.RPT_DATE &gt;=#{startTime}</if>
+        <if test=" endTime != null and endTime !=''" >and a.RPT_DATE &lt;=#{endTime}</if>
+        <if test=" rtpPersonId != null and rtpPersonId !=''" >and a.RPT_PERSON_ID=#{rtpPersonId}</if>
+        <include refid="sql_page_end"/>
+    </select>
+</mapper>

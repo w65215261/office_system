@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/reportMapper">
+
+    <resultMap id="reportMap" type="com.pmcc.soft.week.domain.Report">
+        <id property="id" column="ID"/>
+        <result property="content" column="CONTENT"/>
+        <result property="visiblity" column="VISIBLITY"/>
+        <result property="status" column="STATUS"/>
+        <result property="belongsDate" column="BELONGS_DATE"/>
+        <result property="rptDate" column="RPT_DATE"/>
+        <result property="rtpPersonId" column="RPT_PERSON_ID"/>
+        <result property="rptPersonName" column="RPT_PERSON_NAME"/>
+        <result property="week" column="WEEK"/>
+        <result property="weekNum" column="WEEK_NUM"/>
+        <result property="weekDate" column="WEEK_DATE"/>
+        <result property="type" column="TYPE"/>
+        <result property="orgId" column="ORGID"/>
+        <result property="orgCode" column="ORGCODE"/>
+        <!--<association property="personManage"  javaType="com.pmcc.soft.core.organization.domain.PersonManage">-->
+            <!--<id property="id" column="oid" />-->
+            <!--<result property="userEname" column="USER_ENAME"/>-->
+            <!--<result property="userCname" column="USER_CNAME"/>-->
+            <!--<result property="md5Pwd" column="MD5PWD"/>-->
+            <!--<result property="userCode" column="USER_CODE"/>-->
+            <!--<result property="userDescription" column="USER_DESCRIPTION"/>-->
+            <!--<result property="telephone" column="TELEPHONE"/>-->
+            <!--<result property="telephoneMac" column="TELEPHONE_MAC"/>-->
+            <!--<result property="userSex" column="USER_SEX"/>-->
+            <!--<result property="userBrothday" column="USER_BORTHDAY"/>-->
+            <!--<result property="userMail" column="USER_MAIL"/>-->
+            <!--<result property="userQQ" column="USER_QQ"/>-->
+            <!--<result property="userPhotoUrl" column="USER_PHOTO_URL"/>-->
+            <!--<result property="remark" column="REMARK"/>-->
+            <!--<result property="rptPerson" column="RPT_PERSON"/>-->
+            <!--<result property="createDate" column="CREATE_DATE"/>-->
+            <!--<result property="delFlag" column="DEL_FLAG"/>-->
+            <!--<result property="duty" column="DUTY"/>-->
+        <!--</association>-->
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  RPT_PERSON_NAME ,BELONGS_DATE desc </sql>
+
+    <sql id="sql_columns">
+        ID,
+        CONTENT,
+        VISIBLITY,
+        STATUS,
+        BELONGS_DATE,
+        RPT_DATE,
+        RPT_PERSON_ID,
+        RPT_PERSON_NAME,
+        WEEK,
+        WEEK_NUM,
+        WEEK_DATE,
+        TYPE,
+        ORGID,
+        ORGCODE
+    </sql>
+
+
+    <sql id="sql_table">SUMMARIZE_REPORT</sql>
+
+    <select id="search" resultMap="reportMap">
+        SELECT
+        <include refid="sql_page_init"/>
+        RPT_PERSON_NAME,
+        BELONGS_DATE,
+        STATUS,
+        CONTENT
+        FROM
+        <include refid="sql_table"/>
+        WHERE TYPE=#{type}
+        <if test=" rtpPersonId != null and rtpPersonId !=''" >and RPT_PERSON_ID =#{rtpPersonId}</if>
+        <if test=" orgId != null and orgId !=''" >and ORGID =#{orgId}</if>
+        <if test=" startTime != null and startTime !='' and endTime!=null and endTime!=''" >and BELONGS_DATE BETWEEN #{startTime} and #{endTime}</if>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <select id="searchReport" resultMap="reportMap">
+        SELECT <include refid="sql_columns"/>  FROM  <include refid="sql_table"/>
+        WHERE TYPE=#{type}
+        <if test=" rtpPersonId != null and rtpPersonId !=''" >and RPT_PERSON_ID =#{rtpPersonId}</if>
+        AND BELONGS_DATE=#{belongsDate}
+    </select>
+    <!--保存-->
+    <insert id="insert">
+        INSERT  INTO
+        <include refid="sql_table"/>(<include refid="sql_columns" />)
+        VALUES (
+        #{id},
+        #{content},
+        #{visiblity},
+        #{status},
+        #{belongsDate},
+        #{rptDate},
+        #{rtpPersonId},
+        #{rptPersonName},
+        #{week},
+        #{weekNum},
+        #{weekDate},
+        #{type},
+        #{orgId},
+        #{orgCode}
+        )
+    </insert>
+
+
+    <select id="queryByDate" resultMap="reportMap">
+        SELECT
+        <include refid="sql_columns"></include>
+        FROM
+        <include refid="sql_table"></include>
+        WHERE  RPT_PERSON_ID= #{rtpPersonId} AND  BELONGS_DATE = #{belongsDate} AND TYPE =#{type}
+    </select>
+    <!--周报查询-->
+    <select id="findByWeek" resultMap="reportMap">
+        SELECT
+        <include refid="sql_columns"></include>
+        FROM <include refid="sql_table" ></include>
+        WHERE RPT_PERSON_ID= #{rtpPersonId}  AND WEEK_NUM=#{weekNum} AND WEEK_DATE=#{weekDate} AND TYPE =#{type}
+    </select>
+
+    <select id="query" resultMap="reportMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE RPT_PERSON_ID= #{rtpPersonId} AND BELONGS_DATE=#{belongsDate} AND TYPE =#{type}
+    </select>
+
+    <select id="queryShow" resultMap="reportMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE RPT_PERSON_ID= #{rtpPersonId} AND RPT_DATE=#{rptDate} AND  BELONGS_DATE=#{belongsDate} AND  TYPE=#{type}
+    </select>
+
+    <select id="queryCalendar" resultMap="reportMap" >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE RPT_PERSON_ID= #{rtpPersonId} AND  BELONGS_DATE=#{belongsDate} AND TYPE =#{type}
+    </select>
+
+
+    <select id="findById" resultMap="reportMap">
+       SELECT
+        *
+        FROM
+        <include refid="sql_table"/>
+        WHERE  ID=#{id}
+    </select>
+
+    <update id="update" >
+        update
+        <include refid="sql_table"/>
+        <set >
+            CONTENT=#{content},
+            VISIBLITY=#{visiblity}
+        </set>
+        where ID=#{id}
+    </update>
+
+    <select id="findDayReportStatus" resultMap="reportMap" >
+        select
+        ID,
+        STATUS,
+        BELONGS_DATE,
+        RPT_PERSON_ID
+        from
+        <include refid="sql_table"/>
+        WHERE BELONGS_DATE &gt;=#{firstDate}  AND BELONGS_DATE &lt;=#{lastDate} AND RPT_PERSON_ID=#{rtpPersonId}
+    </select>
+
+    <select id="searchByOrgIdMap" resultMap="reportMap">
+        SELECT
+        <include refid="sql_page_init"/>
+        RPT_PERSON_NAME,
+        BELONGS_DATE,
+        STATUS,
+        CONTENT
+        FROM
+        <include refid="sql_table"/>
+        WHERE TYPE=#{type} and BELONGS_DATE BETWEEN #{startTime} and #{endTime}
+        AND ORGID IN
+        <foreach item="item" index="index" collection="list"  open="(" separator="," close=")">
+            #{item}
+       </foreach>
+        <include refid="sql_page_end"/>
+    </select>
+</mapper>

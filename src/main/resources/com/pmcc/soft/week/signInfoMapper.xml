@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/signInfoMapper" >
+
+    <resultMap id="signInfoMap" type="com.pmcc.soft.week.domain.SignInfo">
+        <id property="id" column="OID" />
+        <result property="signPersonId" column="SIGN_PERSON_OID"/>
+        <result property="signAddress" column="SIGN_ADDRESS"/>
+        <result property="x" column="X" />
+        <result property="y" column="Y" />
+        <result property="signTime" column="SIGN_TIME" />
+        <result property="delFlag" column="DEL_FLAG" />
+
+    </resultMap>
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+    <sql id="sql_order">ORDER BY SIGN_TIME desc,SIGN_PERSON_OID DESC </sql>
+
+    <sql id="sql_columns">
+        OID,
+        SIGN_PERSON_OID,
+        SIGN_ADDRESS,
+        X,
+        Y,
+        SIGN_TIME,
+        DEL_FLAG
+    </sql>
+
+    <sql id="sql_table">SIGN_INFO</sql>
+
+    <!-- 分页查询 -->
+    <select id="query" resultMap="signInfoMap"  >
+        select
+        <include refid="sql_page_init"/>
+        *
+        from
+        SIGN_INFO a
+        where DEL_FLAG=0
+        <if test=" signPersonId != null and signPersonId !=''" >and SIGN_PERSON_OID =#{signPersonId}</if>
+        <if test=" startTime != null and startTime !='' and endTime!=null and endTime!=''" >and SIGN_TIME BETWEEN #{startTime} and #{endTime}</if>
+        <include refid="sql_page_end"/>
+    </select>
+
+
+
+
+
+    <select id="findById" resultMap="signInfoMap"  >
+        select
+        *
+
+        from
+        SIGN_INFO a,PERSON_INFO b
+        <if test=" _parameter != null" >
+            where a.oid = #{_parameter}
+        </if>
+        AND a.PERSON_ID=B.OID
+        order by a.SIGN_TIME
+    </select>
+
+
+
+    <delete id="delete">
+        UPDATE
+        <include refid="sql_table"/>
+        SET DEL_FLAG=1
+        where oid = #{id}
+    </delete>
+
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            <if test="signPersonId != null" >SIGN_PERSON_OID = #{signPersonId},</if>
+            <if test="signAddress != null" >WORK_TYPE = #{signAddress},</if>
+            <if test="x != null" >X = #{x},</if>
+            <if test="y != null" >Y = #{y},</if>
+            <if test="signTime != null" >SIGN_TIME = #{signTime},</if>
+        </set>
+        where oid = #{id}
+    </update>
+
+
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{id},
+        #{signPersonId},
+        #{signAddress},
+        #{x},
+        #{y},
+        #{signTime},
+        #{delFlag}
+        )
+    </insert>
+    <select id="queryOneDay" resultMap="signInfoMap"  >
+        select
+        *
+        from
+        SIGN_INFO
+        where DEL_FLAG=0
+        <if test=" signPersonId != null and signPersonId !=''" >and SIGN_PERSON_OID = #{signPersonId}</if>
+        <if test=" startTime != null and startTime !='' and endTime!=null and endTime!=''" >and SIGN_TIME BETWEEN #{startTime} and #{endTime}</if>
+      ORDER  BY SIGN_TIME DESC
+    </select>
+</mapper>
+

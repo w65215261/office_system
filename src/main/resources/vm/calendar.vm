@@ -1,0 +1,17 @@
+<section>
+    <label class="label col col-2"  style="text-align: right"><span class="redText">*</span>${controlTitle}:</label>
+    <section class="col col-4  no-padding">
+        <label class="input"> <i class="icon-append fa fa-calendar"></i>
+            <input type="text" name="${controlKey}" id="${controlKey}" placeholder="${placeHolder}" readonly="true">
+        </label>
+    </section>
+</section>
+<br>
+<script>
+    $('#${controlKey}').datepicker({
+        dateFormat : 'yy-mm-dd',
+        showOtherMonths:true,
+        prevText : '<i class="fa fa-chevron-left"></i>',
+        nextText : '<i class="fa fa-chevron-right"></i>'
+    });
+</script>

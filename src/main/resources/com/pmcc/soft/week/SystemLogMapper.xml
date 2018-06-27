@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/SystemLogMapper">
+
+    <resultMap id="systemLogMap" type="com.pmcc.soft.week.domain.SystemLog">
+        <id property="id" column="ID"/>
+        <result property="operateDesc" column="OPERATE_DESC"/>
+        <result property="ids" column="IDS"/>
+        <result property="rptPerson" column="RPT_PERSON"/>
+        <result property="rptPersonName" column="RPT_PERSON_NAME"/>
+        <result property="rptDate" column="RPT_DATE"/>
+        <result property="orgName" column="ORG_NAME"/>
+        <result property="orgCode" column="ORG_CODE"/>
+        <result property="orgId" column="ORG_ID"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        <result property="companyName" column="COMPANY_NAME"/>
+        <result property="ipAddress" column="IP_ADDRESS"/>
+        <result property="macAddress" column="MAC_ADDRESS"/>
+        <result property="imei" column="IMEI"/>
+        <result property="source" column="SOURCE"/>
+        <result property="businessModel" column="BUSINESS_MODEL"/>
+        <result property="businessType" column="BUSINESS_TYPE"/>
+        <result property="result" column="RESULT"/>
+        <result property="parameters" column="PARAMETERS"/>
+        <result property="folderId" column="FOLDER_ID"/>
+        <result property="folderType" column="FOLDER_TYPE"/>
+        <result property="folderCode" column="FOLDER_CODE"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0">
+            ${topA} * FROM
+            (
+            SELECT ${topB} ROW_NUMBER() OVER (
+            <include refid="sql_order"/>
+            ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0">
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0">
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+    <sql id="sql_table">SYSTEM_LOG</sql>
+
+    <sql id="sql_columns">
+        ID,
+        OPERATE_DESC,
+        IDS,
+        RPT_PERSON,
+        RPT_PERSON_NAME,
+        RPT_DATE,
+        ORG_NAME,
+        ORG_CODE,
+        ORG_ID,
+        COMPANY_ID,
+        COMPANY_NAME,
+        IP_ADDRESS,
+        MAC_ADDRESS,
+        IMEI,
+        SOURCE,
+        BUSINESS_MODEL,
+        BUSINESS_TYPE,
+        RESULT,
+        PARAMETERS,
+        FOLDER_ID,
+        FOLDER_TYPE,
+        FOLDER_CODE
+    </sql>
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/>
+        (<include refid="sql_columns"/>)
+        values
+        (#{id},
+        #{operateDesc},
+        #{ids},
+        #{rptPerson},
+        #{rptPersonName},
+        #{rptDate},
+        #{orgName},
+        #{orgCode},
+        #{orgId},
+        #{companyId},
+        #{companyName},
+        #{ipAddress},
+        #{macAddress},
+        #{imei},
+        #{source},
+        #{businessModel},
+        #{businessType},
+        #{result},
+        #{parameters},
+        #{folderId},
+        #{folderType},
+        #{folderCode}
+        )
+    </insert>
+
+
+    <!--查询-->
+    <select id="query" resultMap="systemLogMap">
+        select
+          <include refid="sql_page_init"/>
+          <include refid="sql_columns"/>
+        from
+          <include refid="sql_table"/>
+        where 1 = 1
+            <if test="rptPerson != null and rptPerson != '' ">
+                AND RPT_PERSON = #{rptPerson} OR FOLDER_TYPE = '0'
+            </if>
+        <include refid="sql_page_end"/>
+    </select>
+
+</mapper>

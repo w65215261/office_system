@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/SystemAuditPersonConfigMapper">
+
+    <resultMap id="systemAuditPersonConfigMap" type="com.pmcc.soft.week.domain.SystemAuditPersonConfig">
+        <id property="id" column="ID"/>
+        <result property="businessModel" column="BUSINESS_MODEL"/>
+        <result property="businessType" column="BUSINESS_TYPE"/>
+        <result property="businessData" column="BUSINESS_DATA"/>
+        <result property="groupCode" column="GROUP_CODE"/>
+        <result property="auditPerson" column="AUDIT_PERSON"/>
+        <result property="auditPersonName" column="AUDIT_PERSON_NAME"/>
+        <result property="auditOrgId" column="AUDIT_ORG_ID"/>
+        <result property="auditOrgName" column="AUDIT_ORG_NAME"/>
+        <result property="auditOrgCode" column="AUDIT_ORG_CODE"/>
+        <result property="rptPersonId" column="RPT_PERSON_ID"/>
+        <result property="rptPersonName" column="RPT_PERSON_NAME"/>
+        <result property="rptDate" column="RPT_DATE"/>
+    </resultMap>
+
+
+    <sql id="sql_columns">
+       ID,
+       BUSINESS_MODEL,
+       BUSINESS_TYPE,
+       BUSINESS_DATA,
+       GROUP_CODE,
+       AUDIT_PERSON,
+       AUDIT_PERSON_NAME,
+       AUDIT_ORG_ID,
+       AUDIT_ORG_NAME,
+       AUDIT_ORG_CODE,
+       RPT_PERSON_ID,
+       RPT_PERSON_NAME,
+       RPT_DATE
+    </sql>
+
+
+    <sql id="sql_table">SYSTEM_AUDIT_PERSON_CONFIG</sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+
+    <insert id="insert">
+        INSERT  INTO
+        <include refid="sql_table"/>(<include refid="sql_columns" />)
+        VALUES (
+        #{id},
+        #{businessModel},
+        #{businessType},
+        #{businessData},
+        #{groupCode},
+        #{auditPerson},
+        #{auditPersonName},
+        #{auditOrgId},
+        #{auditOrgName},
+        #{auditOrgCode},
+        #{rptPersonId},
+        #{rptPersonName},
+        #{rptDate}
+        )
+    </insert>
+
+    <select id="findConfig" resultMap="systemAuditPersonConfigMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            GROUP_CODE = #{groupCode}
+            AND BUSINESS_DATA = #{businessData}
+        </where>
+        <include refid="sql_order"/>
+    </select>
+
+
+    <select id="query" resultMap="systemAuditPersonConfigMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            BUSINESS_DATA = #{businessData}
+        </where>
+        ORDER BY GROUP_CODE
+    </select>
+
+
+
+</mapper>

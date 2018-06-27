@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/organizationTreeNodeMapper" >
+	
+	<resultMap id="organizationTreeNodeResultMap" type="com.pmcc.soft.core.organization.domain.OrganizationTreeNode">
+		<id property="oid" column="OID" />
+		<result property="orgID" column="ORGANIZATION_ID"/>
+		<result property="parentOrgID" column="PARENT_ORG_ID"/>
+	</resultMap>
+	
+<select id="query" resultMap="organizationTreeNodeResultMap">
+	SELECT  OID,ORGANIZATION_ID, PARENT_ORG_ID FROM organization_RELATION
+</select>
+</mapper>

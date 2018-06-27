@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/authorityRoleInfoMapper" >
+
+	<resultMap id="authorityRoleInfoMapper" type="com.pmcc.soft.core.organization.domain.AuthorityRoleInfo">
+		<id property="id" column="oid" />
+		<result property="roleCode" column="ROLE_CODE"/>
+		<result property="roleName" column="ROLE_NAME"/>
+		<result property="appSystem" column="APP_SYSTEM"/>
+		<result property="desc" column="DESCRIPTION"/>
+		<result property="remark" column="REMARK"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<result property="createTime" column="CREATE_DATE"/>
+		<result property="rptUnit" column="RPT_UNIT"/>
+		<result property="rptPerson" column="RPT_PERSON"/>
+	</resultMap>
+	
+		
+	<sql id="sql_columns">OID,ROLE_CODE,ROLE_NAME,APP_SYSTEM,DESCRIPTION,REMARK,RPT_PERSON,CREATE_DATE,RPT_UNIT,DEL_FLAG</sql>
+	<sql id="sql_table">AUTHORITY_ROLE</sql>
+	
+	<select id="query" resultMap="authorityRoleInfoMapper"  >
+	    select *  from AUTHORITY_ROLE where del_flag = 0
+		<if test="roleCode != null">
+	    	and ROLE_CODE = #{roleCode}
+		</if>
+		order by ROLE_CODE
+	</select>
+	
+	<select id="find" resultMap="authorityRoleInfoMapper">
+		select *  from AUTHORITY_ROLE where oid = #{id} and DEL_FLAG='0'
+	</select>
+
+
+
+	<select id="findByUserId" resultMap="authorityRoleInfoMapper">
+		SELECT * FROM  AUTHORITY_ROLE WHERE OID in
+		(
+			SELECT ROLE_OID FROM AUTHORITY_USER_ROLE WHERE USER_OID = #{_parameter}
+		)
+	</select>
+ 	
+	<update id="update">
+		update  AUTHORITY_ROLE 
+		<set>
+			<if test="roleCode != null">
+				ROLE_CODE=#{roleCode},
+			</if>
+			<if test="roleName != null">
+				ROLE_NAME=#{roleName},
+			</if>
+			<if test="appSystem != null">
+				APP_SYSTEM=#{appSystem},
+			</if>
+			<if test="desc != null">
+				DESCRIPTION=#{desc},
+			</if>
+			<if test="remark != null">
+				REMARK=#{remark},
+			</if>
+			<if test="createTime != null">
+				CREATE_DATE=#{createTime},
+			</if>
+			<if test="rptPerson != null">
+				RPT_PERSON=#{rptPerson},
+			</if>
+			<if test="rptUnit != null">
+				RPT_UNIT=#{rptUnit},
+			</if>
+			
+		</set>
+		where oid = #{id}
+	</update>
+	
+	<insert id="insert">
+		insert <include refid="sql_table"/> ( 
+		<include refid="sql_columns"/> )
+	    values (#{id}, #{roleCode}, #{roleName},#{appSystem},#{desc},#{remark},#{rptPerson},#{createTime},#{rptUnit},#{delFlag})
+	</insert>
+	<update id="delete">
+		update  AUTHORITY_ROLE set del_flag = 1 where oid =#{id}
+	</update>
+	
+</mapper>

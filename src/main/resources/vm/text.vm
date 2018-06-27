@@ -1,0 +1,9 @@
+<section>
+    <label class="label col col-2" style="text-align: right"><span class="redText">*</span>${controlTitle}:</label>
+    <section class="col col-4  no-padding">
+        <label class="input">
+            <input type="text" class="form-control" id="${controlKey}" name="${controlKey}" placeholder="${placeHolder}">
+        </label>
+    </section>
+</section>
+<br>

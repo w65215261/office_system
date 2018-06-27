@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/organizationRelationMapper" >
+	
+	<resultMap id="organizationrelationResultMap" type="com.pmcc.soft.core.organization.domain.OrganizationRelation">
+		<id property="id" column="oid" />
+		<result property="organizationInfoId" column="ORGANIZATION_ID"/>
+		<result property="organizationRelationId" column="PARENT_ORG_ID"/>
+		<result property="relation" column="RELATION"/>
+		<result property="organOrder" column="ORGAN_ORDER"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<association property="createPerson" column="RPT_PERSON" select="com/pmcc/soft/core/organization/personInfoMapper.findById"/>
+	</resultMap>
+	
+	<sql id="sql_columns">OID,ORGANIZATION_ID,PARENT_ORG_ID,RELATION,ORGAN_ORDER,RPT_PERSON,CREATE_DATE</sql>
+	<sql id="sql_table">ORGANIZATION_RELATION</sql>
+
+	<select id="queryOrgR" resultType="com.pmcc.soft.core.organization.domain.OrganizationRelation"  >
+	    select oid as id ,ORGANIZATION_ID ,PARENT_ORG_ID,RELATION,ORGAN_ORDER
+	    from ORGANIZATION_RELATION
+	    <if test=" id != null" >
+	   		 where oid = #{id}
+	    </if>
+	    order by oid
+	</select> 
+	
+	<select id="queryOrgRById" resultMap="organizationrelationResultMap"  >
+	    select oid as id ,ORGANIZATION_ID,PARENT_ORG_ID, RELATION,ORGAN_ORDER
+	    from ORGANIZATION_RELATION
+	    <if test=" _parameter != null" >
+	   		 where oid = #{_parameter}
+	    </if>
+	    order by oid
+	</select> 
+	
+	<select id="queryOrgRbyOrgId" resultMap="organizationrelationResultMap"  >
+	    select oid as id ,ORGANIZATION_ID,PARENT_ORG_ID, RELATION,ORGAN_ORDER
+	    from ORGANIZATION_RELATION
+	    <if test=" _parameter != null" >
+	   		 where ORGANIZATION_ID = #{_parameter}
+	    </if>
+	    order by oid
+	</select>
+	
+	<select id="queryOrgRbyOrgFoid" resultMap="organizationrelationResultMap"  >
+	    select oid as id ,ORGANIZATION_ID,PARENT_ORG_ID, RELATION,ORGAN_ORDER
+	    from ORGANIZATION_RELATION
+	    <if test=" _parameter != null" >
+	   		 where PARENT_ORG_ID = #{_parameter}
+	    </if>
+	    order by oid
+	</select>
+
+	<select id="queryOrgRoot" resultMap="organizationrelationResultMap"  >  
+	    select oid as id ,ORGANIZATION_ID,PARENT_ORG_ID, RELATION,ORGAN_ORDER
+	    from ORGANIZATION_RELATION
+	   		 where RELATION = '-1'
+	   		 	    order by oid
+	</select>
+  
+	<delete id="deleteOrgR">
+	    delete from ORGANIZATION_RELATION
+	    where oid = #{id}
+	</delete>
+  
+	<!-- parameterType="com.pmcc.soft.core.organization.domain" -->
+  
+	<insert id="insertOrgR">
+     insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+	    values (#{id}, #{organizationInfoId}, #{organizationRelationId},#{relation},#{organOrder}, #{createPerson.id},
+	            #{createDate})
+	</insert>
+
+	<update id="updateOrgR">
+    update ORGANIZATION_RELATION
+		<set >
+			<if test="organizationRelationId != null" >
+        PARENT_ORG_ID = #{organizationRelationId},
+			</if>
+		</set>
+    where oid = #{id}
+	</update>
+</mapper>	

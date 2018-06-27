@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/ydpt/ofMucMemberMapper">
+    <resultMap id="ofMucMemberMap" type="com.pmcc.soft.ydpt.domain.OfMucMember">
+        <id property="roomID" column="roomID" />
+        <result property="jid" column="jid"/>
+        <result property="nickname" column="nickname"/>
+        <result property="firstName" column="firstName"/>
+        <result property="lastName" column="lastName"/>
+        <result property="url" column="url"/>
+        <result property="email" column="email"/>
+        <result property="faqentry" column="faqentry"/>
+    </resultMap>
+
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+    <sql id="sql_order">ORDER BY roomID desc</sql>
+    <sql id="sql_columns">roomID,jid,nickname,firstName,lastName,url,email,faqentry</sql>
+    <sql id="sql_table">ofMucMember</sql>
+
+    <select id="query" resultMap="ofMucMemberMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where 1=1
+        <if test="roomID != null and roomID != '' " >
+            and roomID = #{roomID}
+        </if>
+        <if test="nickname != null and nickname != '' " >
+            and nickname = #{nickname}
+        </if>
+        <if test="jid != null and jid != '' " >
+            and jid = #{jid}
+        </if>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <select id="findByRoomId" resultMap="ofMucMemberMap" >
+        select
+          <include refid="sql_page_init"/>
+          <include refid="sql_columns"/>
+        from
+          <include refid="sql_table"/>
+        where
+          roomID = #{roomID}
+        <include refid="sql_page_end"/>
+    </select>
+
+    <delete id="delete">
+        delete from <include refid="sql_table"/>
+        where roomID = #{roomID} and jid = #{jid}
+    </delete>
+
+    <insert id="insert" >
+        insert into <include refid="sql_table"/>(<include refid="sql_columns"/>)
+        values (#{roomID}, #{jid},#{nickname},#{firstName},#{lastName},#{url},#{email},#{faqentry})
+    </insert>
+
+</mapper>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/workHourMapper" >
+
+    <resultMap id="WorkHourMap" type="com.pmcc.soft.week.domain.WorkHour">
+        <id property="id" column="OID" />
+        <result property="personId" column="PERSON_ID"/>
+        <result property="belongsDate" column="BELONGS_DATE"/>
+        <result property="belongsProject" column="BELONGS_PROJECT" />
+        <result property="workType" column="WORK_TYPE" />
+        <result property="workContent" column="WORK_CONTENT" />
+        <result property="remark" column="REMARK" />
+        <result property="startTime" column="START_TIME" />
+        <result property="endTime" column="END_TIME" />
+        <result property="delFlag" column="DEL_FLAG" />
+        <result property="createTime" column="CREATE_TIME" />
+        <association property="personManage"  javaType="com.pmcc.soft.core.organization.domain.PersonManage">
+            <id property="id" column="oid" />
+            <result property="userEname" column="USER_ENAME"/>
+            <result property="userCname" column="USER_CNAME"/>
+            <result property="md5Pwd" column="MD5PWD"/>
+            <result property="userCode" column="USER_CODE"/>
+            <result property="userDescription" column="USER_DESCRIPTION"/>
+            <result property="telephone" column="TELEPHONE"/>
+            <result property="telephoneMac" column="TELEPHONE_MAC"/>
+            <result property="userSex" column="USER_SEX"/>
+            <result property="userBrothday" column="USER_BORTHDAY"/>
+            <result property="userMail" column="USER_MAIL"/>
+            <result property="userQQ" column="USER_QQ"/>
+            <result property="userPhotoUrl" column="USER_PHOTO_URL"/>
+            <result property="remark" column="REMARK"/>
+            <result property="rptPerson" column="RPT_PERSON"/>
+            <result property="createDate" column="CREATE_DATE"/>
+            <result property="delFlag" column="DEL_FLAG"/>
+            <result property="duty" column="DUTY"/>
+
+        </association>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+    <sql id="sql_order">ORDER BY CREATE_TIME desc</sql>
+
+    <sql id="sql_columns">
+        OID,
+        PERSON_ID,
+        BELONGS_DATE,
+        BELONGS_PROJECT,
+        WORK_TYPE,
+        WORK_CONTENT,
+        REMARK,
+        START_TIME,
+        END_TIME,
+        DEL_FLAG,
+        CREATE_TIME
+    </sql>
+
+    <sql id="sql_table">WORKHOUR</sql>
+
+    <!-- 分页查询 -->
+    <select id="query" resultMap="WorkHourMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0
+        <if test=" personId != null and personId !=''" >and PERSON_ID =#{personId}</if>
+        <if test=" dateStart != null and dateStart !='' and dateEnd != null and dateEnd !=''" >AND CREATE_TIME between #{dateStart} and #{dateEnd}</if>
+        <if test=" startTime != null and startTime !='' and endTime != null and endTime !=''" >AND CREATE_TIME between #{startTime} and #{endTime}</if>
+
+        <include refid="sql_page_end"/>
+    </select>
+
+
+
+
+
+    <select id="findById" resultMap="WorkHourMap"  >
+        select
+        *
+
+        from
+        WORKHOUR a,PERSON_INFO b
+        <if test=" _parameter != null" >
+            where a.oid = #{_parameter}
+        </if>
+        AND a.PERSON_ID=B.OID
+        order by a.oid
+    </select>
+
+    <select id="queryByDate" resultMap="WorkHourMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        a where a.CREATE_TIME BETWEEN #{startTime} AND #{endTime}    <if test=" personId != null and personId !=''" >AND a.PERSON_ID =#{personId}</if>  AND a.DEL_FLAG ='0'
+
+    </select>
+
+    <delete id="delete">
+        UPDATE
+        <include refid="sql_table"/>
+        SET DEL_FLAG=1
+        where oid = #{id}
+    </delete>
+
+
+        <update id="update">
+            update <include refid="sql_table"/>
+            <set >
+                <if test="belongsProject != null" >BELONGS_PROJECT = #{belongsProject},</if>
+                <if test="workType != null" >WORK_TYPE = #{workType},</if>
+                <if test="workContent != null" >WORK_CONTENT = #{workContent},</if>
+                <if test="remark != null" >REMARK = #{remark},</if>
+                <if test="startTime != null" >START_TIME = #{startTime},</if>
+                <if test="endTime != null" >END_TIME = #{endTime},</if>
+                <if test="createTime != null" >CREATE_TIME = #{createTime},</if>
+            </set>
+            where oid = #{id}
+        </update>
+
+
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{id},
+        #{personId},
+        #{belongsDate},
+        #{belongsProject},
+        #{workType},
+        #{workContent},
+        #{remark},
+        #{startTime},
+        #{endTime},
+        #{delFlag},
+        #{createTime}
+        )
+    </insert>
+
+</mapper>
+

@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/SystemAttachmentMapper">
+
+    <resultMap id="systemAttachmentMap" type="com.pmcc.soft.week.domain.SystemAttachment">
+        <id property="id" column="ID"/>
+        <result property="businessModel" column="BUSINESS_MODEL"/>
+        <result property="businessType" column="BUSINESS_TYPE"/>
+        <result property="fileName" column="FILE_NAME"/>
+        <result property="fileUrl" column="FILE_URL"/>
+        <result property="fileMathName" column="FILE_MATH_NAME"/>
+        <result property="fileType" column="FILE_TYPE"/>
+        <result property="businessData" column="BUSINESS_DATA"/>
+        <result property="downloadCount" column="DOWNLOAD_COUNT"/>
+        <result property="orgName" column="ORG_NAME"/>
+        <result property="orgCode" column="ORG_CODE"/>
+        <result property="orgId" column="ORG_ID"/>
+        <result property="rptPerson" column="RPT_PERSON"/>
+        <result property="rptPersonName" column="RPT_PERSON_NAME"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="rptDate" column="RPT_DATE"/>
+        <result property="fileSize" column="FILE_SIZE"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0">
+            ${topA} * FROM
+            (
+            SELECT ${topB} ROW_NUMBER() OVER (
+            <include refid="sql_order"/>
+            ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_init_my'>
+        <if test=" initPage == 0 ">
+            ${topA} * FROM
+            (
+            SELECT ${topB} ROW_NUMBER() OVER (
+            <if test="ordFlag == 0">
+                ORDER BY  A.RPT_DATE DESC
+            </if>
+            <if test="ordFlag == 1">
+                ORDER BY  A.FILE_NAME
+            </if>
+            ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0">
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0">
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_columns">
+        ID,
+        BUSINESS_MODEL,
+        BUSINESS_TYPE,
+        FILE_NAME,
+        FILE_URL,
+        FILE_MATH_NAME,
+        FILE_TYPE,
+        BUSINESS_DATA,
+        DOWNLOAD_COUNT,
+        ORG_NAME,
+        ORG_CODE,
+        ORG_ID,
+        RPT_PERSON,
+        RPT_PERSON_NAME,
+        DEL_FLAG,
+        RPT_DATE,
+        FILE_SIZE
+    </sql>
+
+
+    <sql id="sql_table">SYSTEM_ATTACHMENT</sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+
+    <insert id="insert">
+        INSERT INTO
+        <include refid="sql_table"/>(<include refid="sql_columns"/>)
+        VALUES (
+        #{id},
+        #{businessModel},
+        #{businessType},
+        #{fileName},
+        #{fileUrl},
+        #{fileMathName},
+        #{fileType},
+        #{businessData},
+        #{downloadCount},
+        #{orgName},
+        #{orgCode},
+        #{orgId},
+        #{rptPerson},
+        #{rptPersonName},
+        #{delFlag},
+        #{rptDate},
+        #{fileSize}
+        )
+    </insert>
+
+    <delete id="deleteById">
+        delete   from
+        <include refid="sql_table"/>
+        where ID = #{id}
+    </delete>
+
+    <select id="queryByReportId" resultMap="systemAttachmentMap">
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE DEL_FLAG = 0
+        <if test="businessData != null">
+            AND BUSINESS_DATA = #{businessData}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+
+        <include refid="sql_order"/>
+
+    </select>
+
+    <select id="queryByBusinessData" resultMap="systemAttachmentMap">
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE DEL_FLAG = 0
+        <if test="businessData != null">
+            AND BUSINESS_DATA = #{businessData}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+
+        <include refid="sql_order"/>
+
+    </select>
+
+    <select id="queryById" resultMap="systemAttachmentMap">
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            ID = #{id}
+        </where>
+    </select>
+
+    <select id="query" resultMap="systemAttachmentMap">
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        WHERE 1 = 1
+
+        <if test="ids !=null and ids.size !=0">
+            AND ID in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="updateDownloadCount">
+        update
+        <include refid="sql_table"/>
+        <set>
+            DOWNLOAD_COUNT = #{downloadCount}
+        </set>
+        where ID = #{id}
+    </update>
+
+    <update id="updateByTempBusinessData">
+        update
+        <include refid="sql_table"/>
+        <set>
+            BUSINESS_DATA = #{businessData}
+        </set>
+        where BUSINESS_DATA = #{tempBusinessData}
+    </update>
+
+    <!--更新文件名-->
+    <update id="update">
+        update
+        <include refid="sql_table"/>
+        <set>
+            <if test="fileName != null"> FILE_NAME = #{fileName},</if>
+            <if test="delFlag != null"> DEL_FLAG = #{delFlag}</if>
+        </set>
+        where ID = #{id}
+    </update>
+
+    <!--查询文件夹中的文件-->
+    <select id="queryFile" resultMap="systemAttachmentMap">
+
+        SELECT
+          <include refid="sql_page_init_my"/>
+          A.*
+        FROM
+            SYSTEM_ATTACHMENT A,
+            SYSTEM_ATTACHMENT_FOLDER_RELA R
+        WHERE
+            A.ID = R.ATTACHMENT_ID
+            AND R.DEL_FLAG = '0'
+        <if test="folderId != null">
+            AND R.FOLDER_ID = #{folderId}
+        </if>
+        <if test="personId != null">
+            AND R.RPT_PERSON = #{personId}
+        </if>
+        <if test="fileName != null and fileName != '' ">
+            AND A.FILE_NAME LIKE '%' + #{fileName} + '%'
+        </if>
+        <if test="type != null and type != '' ">
+            <if test="type != 6">
+                AND A.FILE_TYPE IN
+                <foreach item="item" index="index" collection="typeList" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="type == 6">
+                AND A.FILE_TYPE NOT IN
+                <foreach item="item" index="index" collection="typeList" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </if>
+
+        <include refid="sql_page_end"/>
+    </select>
+
+</mapper>

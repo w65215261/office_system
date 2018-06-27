@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/TaskAttachmentMapper" >
+
+    <resultMap id="taskAttachmentMap" type="com.pmcc.soft.week.domain.TaskAttachment">
+        <id property="id" column="oid" />
+        <result property="taskOid" column="TASK_OID"/>
+        <result property="fileName" column="FILE_NAME"/>
+        <result property="fileUrl" column="FILE_URL"/>
+        <result property="fileMathName" column="FILE_MATH_NAME"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="creatorId" column="CREATOR_ID"/>
+        <result property="modifyDate" column="MODIFY_DATE"/>
+        <result property="modifyId" column="MODIFY_ID"/>
+        <result property="delFlag" column="DEL_FLAG"/>
+        <result property="workHourOid" column="WORK_HOUR_OID"/>
+        <result property="experienceOid" column="EXPERIENCE_OID"/>
+        <result property="projectOid" column="PROJECT_OID"/>
+        <result property="rptPerson" column="RPT_PERSON"/>
+    </resultMap>
+
+    <sql id="sql_columns">OID,TASK_OID,FILE_NAME,FILE_URL,FILE_MATH_NAME,CREATE_DATE,CREATOR_ID,MODIFY_DATE,MODIFY_ID,DEL_FLAG,WORK_HOUR_OID,EXPERIENCE_OID,PROJECT_OID,RPT_PERSON</sql>
+    <sql id="sql_table">TASK_ATTACHMENT</sql>
+
+    <insert id="insert">
+        insert <include refid="sql_table"/> (OID,TASK_OID,FILE_NAME,FILE_URL,FILE_MATH_NAME,CREATE_DATE,CREATOR_ID,MODIFY_DATE,MODIFY_ID,DEL_FLAG,WORK_HOUR_OID,EXPERIENCE_OID,PROJECT_OID,RPT_PERSON)
+        values (#{id},#{taskOid},#{fileName},#{fileUrl},#{fileMathName},#{createDate},#{creatorId},#{modifyDate},#{modifyId},#{delFlag},#{workHourOid},#{experienceOid},#{projectOid},#{rptPerson})
+    </insert>
+
+    <delete id="deleteAttachment">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where oid = #{id}
+    </delete>
+
+    <delete id="deleteAttachmentByExperienceOid">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where EXPERIENCE_OID = #{experienceOid}
+    </delete>
+
+    <delete id="deleteAttachmentByWorkHourOid">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where WORK_HOUR_OID = #{workHourOid}
+    </delete>
+
+    <delete id="deleteAttachmentByTaskOid">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where TASK_OID = #{taskOid}
+    </delete>
+
+    <select id="findTaskAttachmentByTaskOid" resultMap="taskAttachmentMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where TASK_OID = #{taskOid} AND WORK_HOUR_OID IS NULL AND EXPERIENCE_OID IS NULL AND DEL_FLAG=0
+    </select>
+
+    <select id="findWorkHourAttachmentByTaskOid" resultMap="taskAttachmentMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where TASK_OID = #{taskOid} AND WORK_HOUR_OID = #{workHourOid} AND EXPERIENCE_OID IS NULL AND DEL_FLAG=0
+    </select>
+
+    <select id="findExperienceAttachmentByTaskOid" resultMap="taskAttachmentMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where TASK_OID = #{taskOid} AND WORK_HOUR_OID IS NULL AND EXPERIENCE_OID = #{experienceOid} AND DEL_FLAG=0
+    </select>
+
+    <select id="findTaskAttachmentByProjectOid" resultMap="taskAttachmentMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where PROJECT_OID =  #{projectOid} AND DEL_FLAG=0
+    </select>
+
+
+    <select id="findPlanAttachmentByTaskOId" resultMap="taskAttachmentMap">
+    select <include refid="sql_columns"/>from <include refid="sql_table"/>
+        where TASK_OID = #{taskOid} AND  WORK_HOUR_OID  is NULL  AND EXPERIENCE_OID is NULL  AND  DEL_FLAG= 0 order  BY CREATE_DATE  DESC
+    </select>
+    <select id="findPlanAttachmentByOId" resultMap="taskAttachmentMap">
+        select <include refid="sql_columns"/>from <include refid="sql_table"/>
+        where TASK_OID = #{taskOid} AND DEL_FLAG= 0
+        <if test="workHourOid!=null and workHourOid!=''">
+            AND  WORK_HOUR_OID=#{workHourOid}
+        </if>
+        <if test="experienceOid!=null and experienceOid!=''">
+            AND  EXPERIENCE_OID=#{experienceOid}
+        </if>
+        order BY CREATE_DATE  DESC
+    </select>
+
+    <update id="deletePlanAttachment">
+        update  <include refid="sql_table"/> set DEL_FLAG=1 where oid = #{id}
+    </update>
+    <select id="findPlanAttachment" resultMap="taskAttachmentMap">
+        select <include refid="sql_columns"/>from <include refid="sql_table"/>
+        where Oid = #{id}
+    </select>
+</mapper>

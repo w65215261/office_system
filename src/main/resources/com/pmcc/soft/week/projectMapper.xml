@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/projectMapper" >
+
+    <resultMap id="ProjectMap" type="com.pmcc.soft.week.domain.Project">
+        <id property="id" column="OID" />
+        <result property="projectName" column="PROJECT_NAME"/>
+        <result property="projectManager" column="PROJECT_MANAGER"/>
+        <result property="approvePersonId" column="APPROVAL_PERSON_OID"/>
+        <result property="startTime" column="START_TIME" />
+        <result property="endTime" column="END_TIME" />
+        <result property="projectGoal" column="PROJECT_GOAL" />
+        <result property="visibility" column="VISIBILITY" />
+        <result property="delFlag" column="DEL_FLAG" />
+        <result property="rptPerson" column="RPT_PERSON" />
+        <result property="rptTime" column="RPT_TIME" />
+        <result property="projectStatus" column="PROJECT_STATUS" />
+        <result property="projectSchedule" column="PROJECT_SCHEDULE" />
+        <result property="projectManagerId" column="PROJECT_MANAGER_PERSONID" />
+        <association property="personManage"  javaType="com.pmcc.soft.core.organization.domain.PersonManage">
+            <id property="id" column="oid" />
+            <result property="userEname" column="USER_ENAME"/>
+            <result property="userCname" column="USER_CNAME"/>
+            <result property="md5Pwd" column="MD5PWD"/>
+            <result property="userCode" column="USER_CODE"/>
+            <result property="userDescription" column="USER_DESCRIPTION"/>
+            <result property="telephone" column="TELEPHONE"/>
+            <result property="telephoneMac" column="TELEPHONE_MAC"/>
+            <result property="userSex" column="USER_SEX"/>
+            <result property="userBrothday" column="USER_BORTHDAY"/>
+            <result property="userMail" column="USER_MAIL"/>
+            <result property="userQQ" column="USER_QQ"/>
+            <result property="userPhotoUrl" column="USER_PHOTO_URL"/>
+            <result property="remark" column="REMARK"/>
+            <result property="rptPerson" column="RPT_PERSON"/>
+            <result property="createDate" column="CREATE_DATE"/>
+            <result property="delFlag" column="DEL_FLAG"/>
+            <result property="duty" column="DUTY"/>
+        </association>
+    </resultMap>
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY RPT_TIME desc</sql>
+    <sql id="sql_columns">
+        OID,
+        PROJECT_NAME,
+        PROJECT_MANAGER,
+        APPROVAL_PERSON_OID,
+        START_TIME,
+        END_TIME,
+        PROJECT_GOAL,
+        VISIBILITY,
+        DEL_FLAG,
+        RPT_PERSON,
+        RPT_TIME,
+        PROJECT_STATUS,
+        PROJECT_SCHEDULE,
+        PROJECT_MANAGER_PERSONID
+    </sql>
+    <sql id="sql_table">PROJECT</sql>
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{id},
+        #{projectName},
+        #{projectManager},
+        #{approvePersonId},
+        #{startTime},
+        #{endTime},
+        #{projectGoal},
+        #{visibility},
+        #{delFlag},
+        #{rptPerson},
+        #{rptTime},
+        #{projectStatus},
+        #{projectSchedule},
+        #{projectManagerId}
+        )
+    </insert>
+
+    <!-- 分页查询
+    <select id="queryProject" resultMap="ProjectMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where DEL_FLAG=0  AND  PROJECT_STATUS=0
+        <include refid="sql_page_end"/>
+    </select>-->
+
+    <select id="queryProject" resultMap="ProjectMap"  >
+        select
+        <include refid="sql_page_init"/>
+        a.OID,
+        a.PROJECT_NAME,
+        a.PROJECT_MANAGER,
+        a.APPROVAL_PERSON_OID,
+        a.START_TIME,
+        a.END_TIME,
+        a.PROJECT_GOAL,
+        a.VISIBILITY,
+        a.DEL_FLAG,
+        a.RPT_PERSON,
+        a.RPT_TIME,
+        a.PROJECT_STATUS,
+        a.PROJECT_SCHEDULE,b.USER_CNAME
+        from
+        PROJECT a,PERSON_INFO b
+        where a.DEL_FLAG=0  AND  a.PROJECT_STATUS=0 AND a.APPROVAL_PERSON_OID=b.OID
+        <if test="projectManager!=null and projectManager!=''">
+            AND a.PROJECT_MANAGER= #{projectManager}
+        </if>
+        <include refid="sql_page_end"/>
+    </select>
+
+    <select id="queryProjectByStatus" resultMap="ProjectMap"  >
+        select
+        <include refid="sql_page_init"/>
+        a.OID,
+        a.PROJECT_NAME,
+        a.PROJECT_MANAGER,
+        a.APPROVAL_PERSON_OID,
+        a.START_TIME,
+        a.END_TIME,
+        a.PROJECT_GOAL,
+        a.VISIBILITY,
+        a.DEL_FLAG,
+        a.RPT_PERSON,
+        a.RPT_TIME,
+        a.PROJECT_STATUS,
+        a.PROJECT_SCHEDULE,b.USER_CNAME
+        from
+        PROJECT a,PERSON_INFO b
+        where a.DEL_FLAG=0  AND  a.PROJECT_STATUS=1 AND a.APPROVAL_PERSON_OID=b.OID AND a.PROJECT_MANAGER= #{projectManager}
+        <include refid="sql_page_end"/>
+    </select>
+    <select id="queryProjectByChargePersonId" resultMap="ProjectMap">
+        SELECT
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        where DEL_FLAG=0  AND PROJECT_STATUS=0  AND PROJECT_MANAGER= #{projectManager}
+        ORDER  BY  RPT_TIME DESC
+    </select>
+    <update id="update">
+        update  <include refid="sql_table"/> set PROJECT_STATUS =1   ,   PROJECT_SCHEDULE =100 WHERE  OID=#{id}
+    </update>
+    <update id="updates">
+        update  <include refid="sql_table"/> set PROJECT_STATUS =0   ,   PROJECT_SCHEDULE =100 WHERE  OID=#{id}
+    </update>
+    <update id="delete">
+        update  <include refid="sql_table"/> set DEL_FLAG =1      WHERE  OID=#{id}
+    </update>
+    <update id="updateSchedule">
+        update  <include refid="sql_table"/> set PROJECT_SCHEDULE =#{projectSchedule}      WHERE  OID=#{id}
+    </update>
+    <select id="findProjectByOid" resultMap="ProjectMap">
+        SELECT
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        WHERE  OID=#{id}
+    </select>
+
+    <select id="findProjectByOidAndByPersonId" resultMap="ProjectMap">
+        SELECT
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        WHERE  OID=#{id}
+        AND PROJECT_MANAGER_PERSONID=#{projectManagerId}
+    </select>
+
+    <select id="findProjectManagerByOid" resultMap="ProjectMap">
+        SELECT
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        WHERE  OID=#{id} AND PROJECT_MANAGER=#{projectManager}
+    </select>
+    <select id="findProjectByProjectName" resultMap="ProjectMap">
+        SELECT
+        <include refid="sql_columns"/>
+        FROM
+        <include refid="sql_table"/>
+        where PROJECT_NAME=#{projectName}
+    </select>
+
+    <update id="updateProjectDetail">
+        update  <include refid="sql_table"/>
+        set
+        <if test="projectName!=null and projectName!=''">
+            PROJECT_NAME =#{projectName}
+        </if>
+        <if test="projectGoal!=null and projectGoal!=''">
+            PROJECT_GOAL=#{projectGoal}
+        </if>
+        <if test="startTime!=null and startTime!=''">
+            START_TIME=#{startTime}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            END_TIME=#{endTime}
+        </if>
+        <if test="projectManager!=null and projectManager!=''">
+            PROJECT_MANAGER=#{projectManager}, PROJECT_MANAGER_PERSONID=#{projectManagerId}
+        </if>
+        <if test="approvePersonId!=null and approvePersonId!=''">
+            APPROVAL_PERSON_OID=#{approvePersonId}
+        </if>
+        <if test="visibility!=null and visibility!=''">
+            VISIBILITY=#{visibility}
+        </if>
+        <if test="projectSchedule!=null and projectSchedule!=''">
+            PROJECT_SCHEDULE=#{projectSchedule}
+        </if>
+        WHERE  OID=#{id}
+    </update>
+</mapper>
+

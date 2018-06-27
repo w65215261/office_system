@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/personInfoMapper" >
+
+	<select id="query" resultType="com.pmcc.soft.core.organization.domain.PersonInfo"  >
+		select p.OID  id,p.USER_NAME  userName,p.MD5PWD  passWord,p.TYPE type,p.DEL_FLAG delFlag  
+		  from PERSON_INFO  p
+		  where del_flag = 0
+		<if test=" userName != null" >
+	   		and p.USER_NAME =#{userName}
+		</if>
+	   order by p.USER_NAME
+	</select>
+  
+    <select id="findById" resultType="com.pmcc.soft.core.organization.domain.PersonInfo" >
+    	select p.OID  id,p.USER_NAME  userName,p.MD5PWD  passWord,p.TYPE type,p.DEL_FLAG delFlag  
+		  from PERSON_INFO  p
+		   where oid = #{id}
+    </select>
+	<delete id="delete">
+	    delete from PERSON_INFO
+	    where oid = #{id}
+	</delete>
+  
+	<!-- parameterType="com.pmcc.soft.core.organization.domain.PersonInfo"-->
+  
+	<insert id="insert" >
+	    insert into PERSON_INFO (oid, USER_NAME, MD5PWD,TYPE,DEL_FLAG)
+	    values (#{id}, #{userName}, #{passWord}, #{type},#{delFlag})
+	</insert>
+
+	<update id="update">
+    update PERSON_INFO
+		<set >
+			<if test="passWord != null" >
+        MD5PWD = #{passWord},
+			</if>
+			<if test="type != null" >
+        TYPE = #{type},
+			</if>
+			<if test="delFlag != null" >
+        DEL_FLAG = #{delFlag}
+			</if>
+		</set>
+    where oid = #{id}
+	</update>
+</mapper>

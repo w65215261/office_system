@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/contactGroupInfoMapper" >
+
+<resultMap id="contactGroupInfoMapper" type="com.pmcc.soft.core.organization.domain.ContactGroupInfo">
+		<id property="id" column="oid" />
+		<result property="groupName" column="GROUP_NAME"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<association property="createUser" column="CREATE_USER" select="com/pmcc/soft/core/organization/personManageMapper.findById"/>
+	</resultMap>
+	
+	<sql id="sql_table">CONTACT_GROUP_INFO</sql>
+	<sql id="sql_columns">OID,GROUP_NAME,CREATE_USER,CREATE_DATE,DEL_FLAG</sql>
+    <sql id="sql_where">where DEL_FLAG = 0
+				   	<if test=" id != null" >
+	   					 and oid =#{id}
+					</if>
+	</sql>
+	
+	<delete id="delete">
+	    update  <include refid="sql_table"/> set DEL_FLAG=1 where oid = #{id}
+	</delete>
+	
+	<select id="query" resultMap="contactGroupInfoMapper"  >
+		select  
+			OID,GROUP_NAME
+		from 
+			<include refid="sql_table"/>  
+			<include refid="sql_where"/>  
+	</select>
+	
+
+	
+	
+	<insert id="insert" >
+	    insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+	    values (#{id}, #{groupName}, #{createUser},#{createDate},#{delFlag})
+	</insert>
+	
+	<update id="update">
+	  update <include refid="sql_table"/>
+		<set >
+			<if test="groupName != null" >GROUP_NAME = #{groupName},</if>
+			<if test="createUser != null" >CREATE_USER = #{createUser},</if>
+		</set>
+    where oid = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/SystemAuditMapper">
+
+    <resultMap id="systemAuditMap" type="com.pmcc.soft.week.domain.SystemAudit">
+        <id property="id" column="ID"/>
+        <result property="businessModel" column="BUSINESS_MODEL"/>
+        <result property="businessType" column="BUSINESS_TYPE"/>
+        <result property="businessData" column="BUSINESS_DATA"/>
+        <result property="auditPerson" column="AUDIT_PERSON"/>
+        <result property="auditDate" column="AUDIT_DATE"/>
+        <result property="auditStatus" column="AUDIT_STATUS"/>
+        <result property="auditRemark" column="AUDIT_REMARK"/>
+    </resultMap>
+
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0">
+            ${topA} * FROM
+            (
+            SELECT ${topB} ROW_NUMBER() OVER (
+            <include refid="sql_order"/>
+            ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0">
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0">
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  AUDIT_DATE desc </sql>
+    <sql id="sql_table">SYSTEM_AUDIT</sql>
+
+    <sql id="sql_columns">
+        ID,
+        BUSINESS_MODEL,
+        BUSINESS_TYPE,
+        BUSINESS_DATA,
+        AUDIT_PERSON,
+        AUDIT_DATE,
+        AUDIT_STATUS,
+        AUDIT_REMARK
+    </sql>
+
+    <insert id="save">
+        insert INTO
+        <include refid="sql_table"/>
+        (<include refid="sql_columns"/>)
+        values
+        (#{id},
+        #{businessModel},
+        #{businessType},
+        #{businessData},
+        #{auditPerson},
+        #{auditDate},
+        #{auditStatus},
+        #{auditRemark}
+        )
+    </insert>
+
+
+    <!--查询-->
+    <select id="queryAuditRemark" resultMap="systemAuditMap">
+        select
+          <include refid="sql_columns"/>
+        from
+          <include refid="sql_table"/>
+        where 1 = 1
+            <if test="businessData != null and businessData != '' ">
+                AND  BUSINESS_DATA = #{businessData}
+            </if>
+            <if test="businessType != null and businessType != '' ">
+                AND  BUSINESS_TYPE = #{businessType}
+            </if>
+        ORDER BY  AUDIT_DATE
+    </select>
+
+    <select id="query" resultMap="systemAuditMap">
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where 1 = 1
+        <if test="businessModel != null and businessModel != '' ">
+            AND  BUSINESS_MODEL = #{businessModel}
+        </if>
+        <if test="auditPerson != null and auditPerson != '' ">
+            AND  AUDIT_PERSON = #{auditPerson}
+        </if>
+        <include refid="sql_order"/>
+    </select>
+
+    <!--查询-->
+    <select id="queryAuditPerson" resultMap="systemAuditMap">
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where 1 = 1
+        <if test="businessData != null and auditPerson != null ">
+            AND  BUSINESS_DATA = #{businessData}
+            AND  AUDIT_PERSON = #{auditPerson}
+        </if>
+        <include refid="sql_order"/>
+    </select>
+
+</mapper>

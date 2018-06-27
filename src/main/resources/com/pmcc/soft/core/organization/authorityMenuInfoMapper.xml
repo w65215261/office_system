@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/authorityMenuInfoMapper" >
+
+	<resultMap id="authorityMenuInfoMapper" type="com.pmcc.soft.core.organization.domain.AuthorityMenuInfo">
+		<id property="id" column="oid" />
+		<result property="role" column="ROLE_OID"/>
+		<result property="menu" column="MENU_OID"/>
+		<result property="parentMenu" column="PARENT_MENU"/>
+		<result property="menuOrder" column="MENU_ORDER"/>
+		<result property="rptPerson" column="RPT_PERSON"/>
+		<result property="createTime" column="CREATE_DATE"/>
+		<association property="menuItems" column="MENU_OID" select="com/pmcc/soft/core/organization/menuItemInfoMapper.findById"/>
+	</resultMap>
+	
+	<sql id="sql_columns">OID,ROLE_OID,MENU_OID,PARENT_MENU,MENU_ORDER,RPT_PERSON,CREATE_DATE</sql>
+	<sql id="sql_table">AUTHORITY_MENU</sql>
+	<insert id="insert">
+		insert <include refid="sql_table"/> (<include refid="sql_columns"/> )
+	    values (#{id}, #{role}, #{menu},#{parentMenu},#{menuOrder},#{rptPerson},#{createTime})
+	</insert>
+	<delete id="deleteByRole">
+		delete from <include refid="sql_table"/>  where ROLE_OID = #{role}
+	</delete>
+	
+	
+	<select id="query" resultMap="authorityMenuInfoMapper">
+		select *  from <include refid="sql_table"/>  where MENU_OID = #{menu} and ROLE_OID= #{role} order by MENU_ORDER
+	</select>
+	<select id="queryByParentMenu" resultMap="authorityMenuInfoMapper">
+		select *  from <include refid="sql_table"/>  where PARENT_MENU = #{parentMenu} and ROLE_OID= #{role} order by MENU_ORDER
+	</select>
+	
+	<select id="queryByParentMenuMap" resultMap="authorityMenuInfoMapper">
+		select *  from <include refid="sql_table"/>  where PARENT_MENU = #{parentMenu} and ROLE_OID in
+			<foreach item="item" index="index" collection="roles" open="(" separator="," close=")">  
+		  			#{item}  
+			</foreach>  
+			order by MENU_ORDER
+	</select>
+</mapper>

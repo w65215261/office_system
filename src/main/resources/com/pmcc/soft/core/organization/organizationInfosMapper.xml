@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/organizationInfosMapper" >
+	
+	<resultMap id="organizationInfosResultMap" type="com.pmcc.soft.core.organization.domain.OrganizationInfos">
+		<id property="id" column="oid" />
+		<result property="orgEname" column="ORG_ENAME"/>
+		<result property="orgCname" column="ORG_CNAME"/>
+		<result property="orgShortCname" column="ORG_SHORT_CNAME"/>
+		<result property="orgShortEname" column="ORG_SHORT_ENAME"/>
+		<result property="description" column="DESCRIPTION"/>
+		<result property="orgCode" column="ORG_CODE"/>
+		<result property="orgType" column="ORGAN_TYPE"/>
+		<result property="manageUnitId" column="MANAGE_UNIT_ID"/>
+		<result property="countUnitId" column="COUNT_UNIT"/>
+		<result property="remark" column="REMARK"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<result property="rptUnit" column="RPT_UNIT"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<result property="activationTime" column="ACTIVATION_TIME"/>
+		<result property="userCname" column="USER_CNAME"/>
+		<result property="userEname" column="USER_ENAME"/>
+		<result property="md5Pwd" column="MD5PWD"/>
+		<result property="rptPerson" column="RPT_PERSON"/>
+	</resultMap>
+	
+	<sql id="sql_columns">OID,ORG_ENAME,ORG_CNAME,ORG_SHORT_CNAME,ORG_SHORT_ENAME,DESCRIPTION,ORG_CODE,ORGAN_TYPE,MANAGE_UNIT_ID,COUNT_UNIT,REMARK,CREATE_DATE,RPT_UNIT,DEL_FLAG,ACTIVATION_TIME,USER_CNAME,USER_ENAME,MD5PWD,RPT_PERSON</sql>
+	<sql id="sql_table">ORGANIZATIONS</sql>
+	<sql id='sql_page_init'>
+		<if test=" initPage == 0" >
+
+			${topA}  * FROM
+			(
+			SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+		</if>
+	</sql>
+
+
+	<sql id='sql_page_end'>
+		<if test=" initPage == 0" >
+			) AS initPage
+			WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+			ORDER BY RowNum
+
+		</if>
+		<if test=" initPage != 0" >
+			<include refid="sql_order"/>
+		</if>
+	</sql>
+	<sql id="sql_order">ORDER BY DEL_FLAG  DESC,CREATE_DATE DESC</sql>
+
+
+	<insert id="insertCompany">
+		insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+		values (#{id}, #{orgEname}, #{orgCname},#{orgShortCname},#{orgShortEname}, #{description},
+		#{orgCode},#{orgType},#{manageUnitId},#{countUnitId},#{remark},
+		#{createDate},#{rptUnit},#{delFlag},#{activationTime},#{userCname},#{userEname},#{md5Pwd},#{rptPerson})
+	</insert>
+	<select id="queryBussiness" resultMap="organizationInfosResultMap" >
+		select
+		<include refid="sql_page_init"/>
+		<include refid="sql_columns"/>
+		from  <include refid="sql_table"/>
+		<include refid="sql_page_end"/>
+	</select>
+	<delete id="updateCompany">
+		<!--delete from PERSON_INFO
+        where oid = #{id}-->
+		update <include refid="sql_table"/>
+		<set >
+			DEL_FLAG = 0,ACTIVATION_TIME=#{activationTime}
+		</set >
+		where oid = #{id}
+	</delete>
+	<select id="queryById" resultMap="organizationInfosResultMap" >
+		select * from <include refid="sql_table"/> where oid = #{id} AND DEL_FLAG =2
+	</select>
+</mapper>

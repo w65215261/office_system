@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/personManageMapper" >
+
+
+
+	<resultMap id="personManageMap" type="com.pmcc.soft.core.organization.domain.PersonManage">
+		<id property="id" column="oid" />
+		<result property="userEname" column="USER_ENAME"/>
+		<result property="userCname" column="USER_CNAME"/>
+		<result property="md5Pwd" column="MD5PWD"/>
+		<result property="userCode" column="USER_CODE"/>
+		<result property="userDescription" column="USER_DESCRIPTION"/>
+		<result property="telephone" column="TELEPHONE"/>
+		<result property="telephoneMac" column="TELEPHONE_MAC"/>
+		<result property="userSex" column="USER_SEX"/>
+		<result property="userBrothday" column="USER_BORTHDAY"/>
+		<result property="userMail" column="USER_MAIL"/>
+		<result property="userQQ" column="USER_QQ"/>
+		<result property="userPhotoUrl" column="USER_PHOTO_URL"/>
+		<result property="remark" column="REMARK"/>
+		<result property="rptPerson" column="RPT_PERSON"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<result property="duty" column="DUTY"/>
+		<result property="openId" column="OPEN_ID"/>
+		<result property="wechatId" column="WECHAT_ID"/>
+		<result property="age" column="AGE"/>
+		<result property="officephone" column="OFFICEPHONE"/>
+		<result property="sorting" column="SORT"/>
+		<result property="companyId" column="COMPANY_ID"/>
+	</resultMap>
+
+	<sql id="sql_columns">OID,USER_ENAME,USER_CNAME,MD5PWD,USER_CODE,USER_DESCRIPTION,TELEPHONE,TELEPHONE_MAC,USER_SEX,USER_BORTHDAY,USER_MAIL,USER_QQ,USER_PHOTO_URL,REMARK,RPT_PERSON,CREATE_DATE,DEL_FLAG,DUTY,OPEN_ID,WECHAT_ID,AGE,OFFICEPHONE,SORT,COMPANY_ID</sql>
+	<sql id="sql_table">PERSON_INFO</sql>
+	<sql id="sql_where">where del_flag = 0
+		<if test=" id != null" >
+			and oid =#{id}
+		</if>
+		<if test=" userEname != null" >
+			and USER_ENAME = #{userEname}
+		</if>
+	</sql>
+	<sql id="sql_whereforOrgan"> where oid IN (${organList})
+
+
+		<if test=" id != null" >
+			and oid =#{id}
+		</if>
+		<if test=" userCname != null" >
+			and USER_CNAME  LIKE '%' + #{userCname} + '%'
+
+		</if>
+	</sql>
+	<select id="queryforOrgan" resultMap="personManageMap"  >
+		select
+		<include refid="sql_page_init"/>
+		<include refid="sql_columns"/>
+		from
+		<include refid="sql_table"/>
+		<include refid="sql_whereforOrgan"/>
+		<include refid="sql_page_end"/>
+	</select>
+	<sql id='sql_page_init'>
+		<if test=" initPage == 0" >
+
+			${topA}  * FROM
+			(
+			SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+		</if>
+	</sql>
+
+	<sql id='sql_page_end'>
+		<if test=" initPage == 0" >
+			) AS initPage
+			WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+			ORDER BY RowNum
+
+		</if>
+		<if test=" initPage != 0" >
+			<include refid="sql_order"/>
+		</if>
+	</sql>
+	<sql id="sql_order">ORDER BY SORT</sql>
+
+	<select id="query" resultMap="personManageMap"  >
+		select
+		<include refid="sql_page_init"/>
+		<include refid="sql_columns"/>
+		from
+		<include refid="sql_table"/>
+		<include refid="sql_where"/>
+		<include refid="sql_page_end"/>
+	</select>
+	<select id="findByOid" resultMap="personManageMap" >
+		SELECT d.* FROM PERSON_INFO d,
+		(SELECT PERSON_INFO_ID
+		FROM ORGAN_PERSON_RELATION_INFO a,
+		(SELECT ORGANIZATION_INFO_ID
+		FROM ORGAN_PERSON_RELATION_INFO
+		WHERE PERSON_INFO_ID = #{id}
+		) b
+		WHERE a.ORGANIZATION_INFO_ID = b.ORGANIZATION_INFO_ID
+		) c
+		WHERE d.OID = c.PERSON_INFO_ID
+	</select>
+	<!--关联查询(人员和组织机构) 2014-11-13 sunyongxing -->
+	<select id="queryRelation" resultMap="personManageMap">
+		select
+		<include refid="sql_page_init"/>
+		<include refid="sql_columns"/>
+		from
+		<include refid="sql_table"/>
+		where OID IN(
+		select
+		distinct PERSON_INFO_ID
+		from
+		ORGAN_PERSON_RELATION_INFO o
+		where
+		o.ORGANIZATION_INFO_ID = #{id}
+		)
+		<include refid="sql_page_end"/>
+	</select>
+	<select id="queryAndRoom" resultMap="personManageMap"  >
+		select
+		<include refid="sql_page_init"/>
+		<include refid="sql_columns"/>
+		from
+		<include refid="sql_table"/>
+		where USER_ENAME IN(
+		SELECT nickname FROM ofMucMember WHERE roomID=#{roomid}
+		)
+		<include refid="sql_page_end"/>
+	</select>
+	<delete id="delete">
+		<!--delete from PERSON_INFO
+        where oid = #{id}-->
+		update <include refid="sql_table"/>
+		<set >
+			DEL_FLAG = 1
+		</set >
+		where oid = #{id}
+	</delete>
+
+	<!--<select id="findById" resultType="com.pmcc.soft.core.organization.domain.PersonManage" >
+           select  <include refid="sql_columns"/>
+          from  <include refid="sql_table"/>
+           <if test=" _parameter != null" >
+                where oid = #{_parameter}
+        </if>
+    </select>-->
+
+	<select id="findById" resultMap="personManageMap" >
+		select  <include refid="sql_columns"/>
+		from  <include refid="sql_table"/>
+		where oid = #{id}
+	</select>
+
+	<select id="queryCompanyIdByPersonId" resultMap="personManageMap" >
+		select  COMPANY_ID
+		from  <include refid="sql_table"/>
+		where oid = #{id}
+	</select>
+
+	<!-- parameterType="com.pmcc.soft.core.organization.domain.PersonInfo"-->
+
+	<insert id="insert" >
+		insert into PERSON_INFO ( <include refid="sql_columns"/> ) values (#{id}, #{userEname},#{userCname},#{md5Pwd},#{userCode}, #{userDescription}, #{telephone}, #{telephoneMac}, #{userSex}, #{userBrothday}, #{userMail}, #{userQQ}, #{userPhotoUrl}, #{remark}, #{rptPerson},#{createDate},#{delFlag},#{duty},#{openId},#{wechatId},#{age},#{officephone},#{sorting},#{companyId})
+	</insert>
+
+	<update id="update">
+
+		update <include refid="sql_table"/>
+		<set >
+			<if test="userEname != null" >USER_ENAME = #{userEname},</if>
+			<if test="userCname != null" >USER_CNAME = #{userCname},</if>
+			<if test="md5Pwd != null" >MD5PWD = #{md5Pwd},</if>
+			<if test="userCode != null" >USER_CODE = #{userCode},</if>
+			<if test="userDescription != null" >USER_DESCRIPTION = #{userDescription},</if>
+			<if test="telephone != null" >TELEPHONE = #{telephone},</if>
+			<if test="telephoneMac != null" >TELEPHONE_MAC = #{telephoneMac},</if>
+			<if test="userSex != null" >USER_SEX = #{userSex},</if>
+			<if test="userBrothday != null" >USER_BORTHDAY = #{userBrothday},</if>
+			<if test="userMail != null" >USER_MAIL = #{userMail},</if>
+			<if test="userQQ != null" >USER_QQ = #{userQQ},</if>
+			<if test="userPhotoUrl != null" >USER_PHOTO_URL = #{userPhotoUrl},</if>
+			<if test="remark != null" >REMARK = #{remark},</if>
+			<if test="rptPerson != null" >RPT_PERSON = #{rptPerson},</if>
+			<if test="createDate != null" >CREATE_DATE = #{createDate},</if>
+			<if test="delFlag != null" >DEL_FLAG = #{delFlag},</if>
+			<if test="duty != null" >DUTY = #{duty},</if>
+			<if test="openId != null" >OPEN_ID = #{openId},</if>
+			<if test="wechatId != null" >WECHAT_ID = #{wechatId}</if>
+
+
+			<if test="age != null" >AGE = #{age},</if>
+			<if test="officephone != null" >OFFICEPHONE = #{officephone},</if>
+			<if test="sorting != null" >SORT = #{sorting}</if>
+		</set>
+		where oid = #{id}
+	</update>
+	<insert id="insertCompany">
+		insert into PERSON_INFO (oid,USER_ENAME,USER_CNAME,MD5PWD,COMPANY_ID) VALUE (#{id},#{userEname},#{userCname},#{MD5PWD},#{companyId})
+	</insert>
+	<select id="queryBussiness" resultMap="personManageMap" >
+		select  *
+		from  <include refid="sql_table"/>
+		where DEL_FLAG=2 AND COMPANY_ID=#{companyId}
+	</select>
+	<delete id="updateCompany">
+		<!--delete from PERSON_INFO
+        where oid = #{id}-->
+		update <include refid="sql_table"/>
+		<set >
+			DEL_FLAG = 0
+		</set >
+		where oid = #{id}
+	</delete>
+	<select id="checkPersonName" resultMap="personManageMap"  >
+		select
+		*
+		from
+		<include refid="sql_table"/>
+		where USER_ENAME =#{userEname} AND  DEL_FLAG=0
+	</select>
+</mapper>

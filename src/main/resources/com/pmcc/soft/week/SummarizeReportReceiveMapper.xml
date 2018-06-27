@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/SummarizeReportReceiveMapper">
+
+    <resultMap id="summarizeReportReceiveMap" type="com.pmcc.soft.week.domain.SummarizeReportReceive">
+        <id property="id" column="ID"/>
+        <result property="reportId" column="REPORT_ID"/>
+        <result property="reportType" column="REPORT_TYPE"/>
+        <result property="receivePersonId" column="RECEIVE_PERSON_ID"/>
+        <result property="receivePersonName" column="RECEIVE_PERSON_NAME"/>
+        <result property="readFlag" column="READ_FLAG"/>
+        <result property="orgId" column="ORGID"/>
+        <result property="orgCode" column="ORGCODE"/>
+        <result property="rptPersonId" column="RPT_PERSON_ID"/>
+        <result property="rptDate" column="RPT_DATE"/>
+    </resultMap>
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{iDisplayLength}+1 AND #{page}*#{iDisplayLength}
+            ORDER BY RowNum
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+    <sql id="sql_order">ORDER BY  RPT_DATE desc </sql>
+
+    <sql id="sql_columns">
+        ID,
+        REPORT_ID,
+        REPORT_TYPE,
+        RECEIVE_PERSON_ID,
+        RECEIVE_PERSON_NAME,
+        READ_FLAG,
+        ORGID,
+        ORGCODE,
+        RPT_PERSON_ID,
+        RPT_DATE
+    </sql>
+
+
+    <sql id="sql_table">SUMMARIZE_REPORT_RECEIVE</sql>
+
+    <insert id="insert">
+        INSERT  INTO
+        <include refid="sql_table"/>(<include refid="sql_columns" />)
+        VALUES (
+        #{id},
+        #{reportId},
+        #{reportType},
+        #{receivePersonId},
+        #{receivePersonName},
+        #{readFlag},
+        #{orgId},
+        #{orgCode},
+        #{rptPersonId},
+        #{rptDate}
+        )
+    </insert>
+
+    <select id="queryByReceivePersonId" resultMap="summarizeReportReceiveMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            RECEIVE_PERSON_ID = #{receivePersonId}
+            AND ORGID = #{orgId}
+            <if test="rptPersonId != null and rptPersonId !='' " >
+                AND RPT_PERSON_ID = #{rptPersonId}
+            </if>
+            <if test=" startTime != null and startTime !='' and endTime!=null and endTime!=''" >and RPT_DATE BETWEEN #{startTime} and #{endTime}</if>
+        </where>
+        <include refid="sql_order"/>
+    </select>
+
+    <select id="query" resultMap="summarizeReportReceiveMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            REPORT_ID = #{reportId}
+            <if test=" readFlag == 1 " >
+                AND READ_FLAG = #{readFlag}
+            </if>
+            <if test=" readFlag == 0 " >
+                AND READ_FLAG = #{readFlag}
+            </if>
+            <if test=" receivePersonId != null and receivePersonId !='' " >
+                AND RECEIVE_PERSON_ID = #{receivePersonId}
+            </if>
+        </where>
+        <include refid="sql_order"/>
+    </select>
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            READ_FLAG = #{readFlag}
+        </set>
+        where REPORT_ID = #{reportId}
+        and RECEIVE_PERSON_ID = #{receivePersonId}
+    </update>
+    <select id="queryReportByReceivePersonId" resultMap="summarizeReportReceiveMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <where>
+            RECEIVE_PERSON_ID = #{receivePersonId}
+            <if test="rptPersonId != null and rptPersonId !='' " >
+                AND RPT_PERSON_ID = #{rptPersonId}
+            </if>
+            <if test=" startTime != null and startTime !='' and endTime!=null and endTime!=''" >and RPT_DATE BETWEEN #{startTime} and #{endTime}</if>
+        </where>
+        <include refid="sql_page_end"/>
+    </select>
+</mapper>

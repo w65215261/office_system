@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/week/programmeManagementMapper" >
+
+    <resultMap id="ProgrammeManagementMap" type="com.pmcc.soft.week.domain.ProgrammeManagement">
+        <id property="oid" column="OID" />
+        <result property="title" column="TITLE"/>
+        <result property="startTime" column="START_TIME"/>
+        <result property="endTime" column="END_TIME" />
+        <result property="className" column="CLASS_NAME" />
+        <result property="icon" column="ICON" />
+        <result property="userOid" column="USER_OID" />
+        <result property="description" column="DESCRIPTION" />
+    </resultMap>
+
+    <sql id="sql_columns">
+        OID,
+        TITLE,
+        START_TIME,
+        END_TIME,
+        CLASS_NAME,
+        ICON,
+        USER_OID,
+        DESCRIPTION
+    </sql>
+
+    <sql id="sql_table">PROGRAMME_MANAGEMENT</sql>
+
+    <select id="queryProgramme" resultMap="ProgrammeManagementMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where USER_OID =#{userOid}
+    </select>
+
+    <insert id="insert">
+        insert INTO
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{oid},
+        #{title},
+        #{startTime},
+        #{endTime},
+        #{className},
+        #{icon},
+        #{userOid},
+        #{description}
+        )
+    </insert>
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            TITLE = #{title},
+            START_TIME = #{startTime},
+            END_TIME = #{endTime},
+            CLASS_NAME = #{className},
+            ICON = #{icon},
+            USER_OID = #{userOid},
+            DESCRIPTION = #{description}
+        </set>
+        where OID = #{oid}
+    </update>
+
+    <delete id="delete">
+        delete   from
+        <include refid="sql_table"/>
+        where oid = #{oid}
+    </delete>
+    <select id="query" resultMap="ProgrammeManagementMap"  >
+        select top 4 * from PROGRAMME_MANAGEMENT where USER_OID =#{userOid} ORDER BY START_TIME desc
+    </select>
+    <select id="queryProgra" resultMap="ProgrammeManagementMap"  >
+        select  * from PROGRAMME_MANAGEMENT where OID = #{oid}
+    </select>
+</mapper>
+

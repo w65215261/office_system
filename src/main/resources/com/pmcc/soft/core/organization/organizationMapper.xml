@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/organizationMapper" >
+	
+	<resultMap id="organizationResultMap" type="com.pmcc.soft.core.organization.domain.OrganizationInfo">
+		<id property="id" column="OID" />
+		<result property="orgEname" column="ORG_ENAME"/>
+		<result property="orgCname" column="ORG_CNAME"/>
+		<result property="orgShortCname" column="ORG_SHORT_CNAME"/>
+		<result property="orgShortEname" column="ORG_SHORT_ENAME"/>
+		<result property="description" column="DESCRIPTION"/>
+		<result property="orgCode" column="ORG_CODE"/>
+		<result property="orgType" column="ORGAN_TYPE"/>
+		<result property="manageUnitId" column="MANAGE_UNIT_ID"/>
+		<result property="countUnitId" column="COUNT_UNIT"/>
+		<result property="remark" column="REMARK"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<result property="rptUnit" column="RPT_UNIT"/>
+		<result property="createDate" column="CREATE_DATE"/>
+		<association property="rptPerson" column="RPT_PERSON" select="com/pmcc/soft/core/organization/personInfoMapper.findById"/>
+	</resultMap>
+
+	<resultMap id="organizationInfoMap" type="com.pmcc.soft.core.organization.domain.OrganizationInfo">
+		<id property="id" column="OID" />
+		<result property="orgEname" column="ORG_ENAME"/>
+		<result property="orgCname" column="ORG_CNAME"/>
+		<result property="orgShortCname" column="ORG_SHORT_CNAME"/>
+		<result property="orgShortEname" column="ORG_SHORT_ENAME"/>
+		<result property="description" column="DESCRIPTION"/>
+		<result property="orgCode" column="ORG_CODE"/>
+		<result property="orgType" column="ORGAN_TYPE"/>
+		<result property="manageUnitId" column="MANAGE_UNIT_ID"/>
+		<result property="countUnitId" column="COUNT_UNIT"/>
+		<result property="remark" column="REMARK"/>
+		<result property="delFlag" column="DEL_FLAG"/>
+		<result property="createDate" column="CREATE_DATE"/>
+	</resultMap>
+	
+	<sql id="sql_columns">OID,ORG_ENAME,ORG_CNAME,ORG_SHORT_CNAME,ORG_SHORT_ENAME,DESCRIPTION,ORG_CODE,ORGAN_TYPE,MANAGE_UNIT_ID,COUNT_UNIT,REMARK,RPT_PERSON,CREATE_DATE,RPT_UNIT,DEL_FLAG</sql>
+	<sql id="sql_table">ORGANIZATION</sql>
+
+	<select id="queryOrg" resultType="com.pmcc.soft.core.organization.domain.OrganizationInfo"  >
+	    select oid as id ,org_cname, orgCname,org_ename orgEname
+	    from organization
+	    <if test=" id != null" >
+	   		 where id = #{id}
+	    </if>
+	    order by oid
+	</select>
+	
+	<select id="queryOrgById" resultType="com.pmcc.soft.core.organization.domain.OrganizationInfo"  >
+	    select oid ,org_cname ,ORG_ENAME,DESCRIPTION,ORG_CODE,REMARK
+	    from organization 
+	    <if test=" _parameter != null" >
+	   		 where oid = #{_parameter}
+	    </if>
+	    order by oid
+	</select>
+	
+	<select id="queryOrgByidT" resultMap="organizationResultMap"  >
+	    select  
+	    <include refid="sql_columns"/>
+	    from 
+	    <include refid="sql_table"/>  
+	    <if test=" id != null" >
+	   		 where oid = #{id}
+	    </if>
+	    order by ORG_CODE
+	</select>
+	
+	<select id="queryTwo" resultMap="organizationResultMap"  >
+	    select  
+	    <include refid="sql_columns"/>
+	    from 
+	    <include refid="sql_table"/>  where 1=1
+	    <if test=" id != null" >
+	   		and  oid = #{id}
+	    </if>
+	    <if test=" orgType != null" >
+	   		 and ORGAN_TYPE = #{orgType}
+	    </if>
+	    order by ORG_CODE asc
+	</select>
+  
+  <!-- 机构编码唯一性验证 by LvXL -->
+  	<select id="queryOrgCode" resultMap="organizationResultMap"  >
+	    select  
+	    <include refid="sql_columns"/>
+	    from 
+	    <include refid="sql_table"/>  
+	    where ORG_CODE = #{orgCode}
+	</select>
+  
+	<delete id="deleteOrg">
+	    delete from organization
+	    where oid = #{id}
+	</delete>
+  
+	<!-- parameterType="com.pmcc.soft.core.organization.domain" -->
+    
+    <!--原来为对象
+	<insert id="insertOrg">
+     insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+	    values (#{id}, #{orgEname}, #{orgCname},#{orgShortCname},#{orgShortEname}, #{description},
+	            #{orgCode},#{orgType},#{manageUnit.id},#{countUnit.id},#{remark},#{rptPerson.id},#{createDate},#{rptUnit.id},#{delFlag})
+	</insert>
+    -->
+    
+    <insert id="insertOrg">
+     insert <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+	    values (#{id}, #{orgEname}, #{orgCname},#{orgShortCname},#{orgShortEname}, #{description},
+	            #{orgCode},#{orgType},#{manageUnitId},#{countUnitId},#{remark},#{rptPerson.id},#{createDate},#{rptUnit},#{delFlag})
+	</insert>
+    
+	<update id="updateOrg">
+    update organization
+		<set >
+			<if test="orgEname != null" >ORG_ENAME = #{orgEname},</if>
+			<if test="orgCname != null" >ORG_CNAME = #{orgCname},</if>
+			<if test="orgShortCname != null" >ORG_SHORT_CNAME = #{orgShortCname},</if>
+			<if test="orgShortEname != null" >ORG_SHORT_ENAME = #{orgShortEname},</if>
+			<if test="description != null" >DESCRIPTION = #{description},</if>
+			<if test="orgCode != null" >ORG_CODE = #{orgCode},</if>
+			<if test="orgType != null" >ORGAN_TYPE = #{orgType},</if>
+			<if test="manageUnitId != null" >MANAGE_UNIT_ID = #{manageUnitId},</if>
+			<if test="countUnitId != null" >COUNT_UNIT = #{countUnitId},</if>
+			<if test="remark != null" >REMARK = #{remark},</if>
+		</set>
+    where oid = #{id}
+	</update>
+	<select id="queryOrgCname" resultMap="organizationResultMap"  >
+		select ORG_CNAME
+		from organization
+			where OID = #{id}
+	</select>
+	<select id="queryOrgByOrgId" resultMap="organizationResultMap"  >
+		select <include refid="sql_columns"/>
+		from organization
+			where Oid = #{id}
+	</select>
+	<sql id='sql_page_init'>
+		<if test=" initPage == 0" >
+
+			${topA}  * FROM
+			(
+			SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+		</if>
+	</sql>
+
+
+	<sql id='sql_page_end'>
+		<if test=" initPage == 0" >
+			) AS initPage
+			WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+			ORDER BY RowNum
+
+		</if>
+		<if test=" initPage != 0" >
+			<include refid="sql_order"/>
+		</if>
+	</sql>
+	<sql id="sql_order">ORDER BY CREATE_DATE DESC </sql>
+	<select id="queryBussiness" resultMap="organizationResultMap" >
+		select
+		*
+		from<include refid="sql_table"/>
+		ORDER BY MANAGE_UNIT_ID DESC
+	</select>
+	<delete id="updateCompany">
+		<!--delete from PERSON_INFO
+        where oid = #{id}-->
+		update <include refid="sql_table"/>
+		<set >
+			DEL_FLAG = 0
+		</set >
+		where oid = #{id}
+	</delete>
+
+	<!--通过人员id查询机构-->
+	<!--<if test=" companyId != null" >-->
+	<!--AND person.COMPANY_ID = #{companyId}-->
+	<!--</if>-->
+	<select id="queryOrgByPersonId" resultMap="organizationInfoMap">
+		SELECT org.*
+		FROM PERSON_INFO person, ORGANIZATION org, ORGAN_PERSON_RELATION_INFO rel
+		WHERE rel.PERSON_INFO_ID = person.OID
+		AND rel.ORGANIZATION_INFO_ID = org.OID
+		<if test=" personId != null and personId != ''" >
+			AND person.OID = #{personId}
+		</if>
+	</select>
+
+</mapper>

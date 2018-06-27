@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com/pmcc/soft/core/organization/newsInfoMapper">
+    <resultMap id="newsInfoMap" type="com.pmcc.soft.core.organization.domain.NewsInfo">
+        <id property="id" column="oid" />
+        <result property="title" column="TITLE"/>
+        <result property="content" column="CONTENT"/>
+        <result property="contentTxt" column="CONTENT_TXT"/>
+        <result property="type" column="TYPE"/>
+        <result property="orderNo" column="ORDER_NO"/>
+        <result property="rptPerson" column="RPT_PERSON"/>
+        <result property="rptDate" column="RPT_DATE"/>
+         <result property="toptime" column="TOPTIME"/>
+          <result property="clicknum" column="CLICKNUM"/>
+           <result property="topmark" column="TOPMARK"/>
+        <result property="orgId" column="ORG_ID"/>
+    </resultMap>
+
+
+    <!-- 分页语句 -->
+    <sql id='sql_page_init'>
+        <if test=" initPage == 0" >
+            ${topA}  * FROM
+            (
+            SELECT  ${topB}  ROW_NUMBER() OVER (  <include refid="sql_order"/>   ) AS RowNum,
+
+        </if>
+    </sql>
+
+    <sql id='sql_page_end'>
+        <if test="initPage == 0" >
+            ) AS initPage
+            WHERE RowNum BETWEEN (#{page}-1)*#{rows}+1 AND #{page}*#{rows}
+        </if>
+        <if test="initPage != 0" >
+            <include refid="sql_order"/>
+        </if>
+    </sql>
+
+
+    <!-- 排序 -->
+    <sql id="sql_order">ORDER BY TOPMARK DESC,TOPTIME DESC</sql>
+
+    <sql id="sql_columns">
+        OID,
+        TITLE,
+        CONTENT,
+        CONTENT_TXT,
+        TYPE,
+        ORDER_NO,
+        RPT_PERSON,
+        RPT_DATE,
+        TOPTIME,
+        CLICKNUM,
+        TOPMARK,
+        ORG_ID
+    </sql>
+
+    <sql id="sql_table">NEWS_INFO</sql>
+
+    <!-- 分页查询 -->
+    <select id="query" resultMap="newsInfoMap"  >
+        select
+        <include refid="sql_page_init"/>
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        where 1=1
+        <if test="type!= null" >
+            and TYPE = #{type}
+        </if>
+        <if test="title!= null" >
+            and TITLE  LIKE '%' + #{title} + '%'
+        </if>
+        <if test="content!= null" >
+            and CONTENT  LIKE '%' + #{content} + '%'
+        </if>
+        <if test="startTime != null and endTime !=null" >
+            and (RPT_DATE between #{startTime} and #{endTime})
+        </if>
+        <if test="orgId != null and orgId !=null" >
+            and (ORG_ID between #{orgId} and #{orgId})
+        </if>
+        <include refid="sql_page_end"/>
+    </select>
+
+
+    <select id="findById" resultMap="newsInfoMap"  >
+        select
+        <include refid="sql_columns"/>
+        from
+        <include refid="sql_table"/>
+        <if test="_parameter != null" >
+            where OID = #{_parameter}
+        </if>
+    </select>
+
+    <delete id="delete">
+        delete from  <include refid="sql_table"/>  where OID = #{id}
+    </delete>
+
+    <insert id="insert">
+        insert
+        <include refid="sql_table"/> ( <include refid="sql_columns"/> )
+        values
+        (#{id},
+        #{title},
+        #{content},
+        #{contentTxt},
+        #{type},
+        #{orderNo},
+        #{rptPerson},
+        #{rptDate},
+        #{toptime},
+        #{clicknum},
+        #{topmark},
+        #{orgId}
+        )
+    </insert>
+
+    <update id="update">
+        update <include refid="sql_table"/>
+        <set >
+            <if test="title != null" >TITLE = #{title},</if>
+            <if test="content != null" >CONTENT = #{content},</if>
+            <if test="content != null" >CONTENT_TXT = #{contentTxt},</if>
+            <if test="type != null" >TYPE = #{type},</if>
+            <if test="orderNo != null" >ORDER_NO = #{orderNo},</if>
+             <if test="toptime != null" >TOPTIME = #{toptime},</if>
+             <if test="clicknum != null" >CLICKNUM = #{clicknum},</if>
+            <if test="topmark != null" >TOPMARK = #{topmark},</if>
+        </set>
+        where OID = #{id}
+    </update>
+    <select id="queryNewsInfo" resultMap="newsInfoMap"  >
+        select top 4 * FROM  NEWS_INFO WHERE ORG_ID =#{orgId} ORDER BY RPT_DATE desc
+    </select>
+
+</mapper>
